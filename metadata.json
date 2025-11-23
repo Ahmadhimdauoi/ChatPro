@@ -1,0 +1,5 @@
+{
+  "name": "ChatPro",
+  "description": "A full-stack real-time internal chat application for employees powered by Node.js, MongoDB, Socket.IO, and React.",
+  "requestFramePermissions": []
+}
