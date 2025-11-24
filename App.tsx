@@ -55,15 +55,18 @@ const App: React.FC = () => {
       console.log('User authenticated, attempting to connect Socket.IO...');
       setIsConnectingSocket(true);
       socketService.connect(jwtToken);
-      setIsConnectingSocket(false); // Connection attempt initiated
 
       // Optional: Add listeners for socket events like messages, user status etc.
-      socketService.onConnect = () => console.log('Socket.IO Connected!');
-      socketService.onDisconnect = () => console.log('Socket.IO Disconnected!');
-      socketService.onError = (err) => {
+      socketService.setOnConnect(() => {
+        console.log('Socket.IO Connected!');
+        setIsConnectingSocket(false);
+      });
+      socketService.setOnDisconnect(() => console.log('Socket.IO Disconnected!'));
+      socketService.setOnError((err) => {
         console.error('Socket.IO error:', err);
         setAuthError(`Socket connection error: ${err.message}`);
-      };
+        setIsConnectingSocket(false);
+      });
       // Example of handling a chat message received via socket
       // socketService.onChatMessage = (message) => {
       //   console.log('Received chat message:', message);
@@ -88,9 +91,9 @@ const App: React.FC = () => {
     setAuthError(null);
     try {
       const response = await authService.login({ email, password });
-      if (response.success && response.token && response.data?.user) {
-        localStorage.setItem('jwtToken', response.token);
-        setJwtToken(response.token);
+      if (response.success && response.data?.token && response.data?.user) {
+        localStorage.setItem('jwtToken', response.data.token);
+        setJwtToken(response.data.token);
         setCurrentUser(response.data.user);
         setIsAuthenticated(true);
         setShowRegisterScreen(false); // Ensure login screen is not shown
@@ -109,9 +112,9 @@ const App: React.FC = () => {
     setAuthError(null);
     try {
       const response = await authService.register({ username, email, password, department });
-      if (response.success && response.token && response.data?.user) {
-        localStorage.setItem('jwtToken', response.token);
-        setJwtToken(response.token);
+      if (response.success && response.data?.token && response.data?.user) {
+        localStorage.setItem('jwtToken', response.data.token);
+        setJwtToken(response.data.token);
         setCurrentUser(response.data.user);
         setIsAuthenticated(true);
         setShowRegisterScreen(false); // After successful registration, log them in

@@ -38,7 +38,7 @@ const initSocketIO = (socketIoInstance) => {
     User.findByIdAndUpdate(socket.userId, { status: 'online' }, { new: true }).then(user => {
       if (user) {
         console.log(`User ${user.username} is now online.`);
-        // Optional: io.emit('userStatusUpdate', { userId: user._id, status: 'online' });
+        io.emit('userStatusUpdate', { userId: user._id, status: 'online' });
       }
     }).catch(err => console.error('Error updating user status to online:', err));
 
@@ -115,4 +115,16 @@ const initSocketIO = (socketIoInstance) => {
   });
 };
 
-module.exports = { initSocketIO };
+
+/**
+ * Returns the Socket.IO server instance.
+ * @returns {Server|null} The Socket.IO server instance or null if not initialized.
+ */
+const getIO = () => {
+    if (!io) {
+        console.warn('Socket.IO not initialized!');
+    }
+    return io;
+};
+
+module.exports = { initSocketIO, getIO };

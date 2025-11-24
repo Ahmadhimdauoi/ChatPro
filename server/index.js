@@ -20,7 +20,7 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:8000", // Allow frontend URL
+  origin: ["http://localhost:8000", "http://localhost:8002", "http://localhost:3000"], // Allow multiple frontend URLs
   credentials: true
 })); // Enable CORS for frontend
 app.use(express.json()); // Body parser for JSON
@@ -33,7 +33,7 @@ app.use('/api/chats', chatRoutes); // New: Use chat routes
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:8000", // Allow frontend URL
+    origin: ["http://localhost:8000", "http://localhost:8002", "http://localhost:3000"], // Allow multiple frontend URLs
     methods: ["GET", "POST"],
     credentials: true
   }

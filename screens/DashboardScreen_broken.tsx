@@ -19,8 +19,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
   const [chats, setChats] = useState<Chat[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]); // Standard chat messages
+  const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]); // AI chat history (local only)
   const [loadingChats, setLoadingChats] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -28,12 +28,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
   const [error, setError] = useState<string | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
 
+  // Ref to store the activeChatId, useful for access inside socket callbacks without dependency issues
   const activeChatIdRef = useRef<string | null>(null);
+  
+  // Ref to check if AI is currently thinking to prevent multiple submissions
   const isAiThinking = useRef(false);
 
-  // Fetch user chats
+  // --- Initial Data Fetching ---
+
+  // Fetch all chats for the current user
   const fetchUserChats = useCallback(async () => {
     if (!currentUser?._id) return;
+
     setLoadingChats(true);
     setError(null);
     try {
@@ -54,7 +60,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
     fetchUserChats();
   }, [fetchUserChats]);
 
-  // Fetch all users
+  // Fetch all users for the directory
   useEffect(() => {
     const fetchAllUsers = async () => {
       setLoadingUsers(true);
@@ -75,28 +81,30 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
     fetchAllUsers();
   }, [currentUser._id]);
 
-  // Fetch messages for active chat
+  // Fetch messages for the active chat
   useEffect(() => {
     const fetchMessages = async () => {
+      // If AI Chat, we don't fetch from backend.
       if (activeChatId === 'AI_CHAT') {
         setLoadingMessages(false);
+        // Ensure dummy welcome message if empty
         if (aiMessages.length === 0) {
-          setAiMessages([{
-            _id: uuidv4(),
-            chat_id: 'AI_CHAT',
-            sender_id: 'gemini-ai',
-            sender_username: 'AI Assistant',
-            content: `Hello ${currentUser.username}! I am your AI Assistant. How can I help you today?`,
-            timestamp: new Date().toISOString(),
-            is_read: true,
-            role: MessageRole.Model
-          }]);
+            setAiMessages([{
+                _id: uuidv4(),
+                chat_id: 'AI_CHAT',
+                sender_id: 'gemini-ai',
+                sender_username: 'AI Assistant',
+                content: `Hello ${currentUser.username}! I am your AI Assistant. How can I help you today?`,
+                timestamp: new Date().toISOString(),
+                is_read: true,
+                role: MessageRole.Model
+            }]);
         }
         return;
       }
 
       if (!activeChatId) {
-        setMessages([]);
+        setMessages([]); // Clear messages if no chat is active
         return;
       }
 
@@ -105,6 +113,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
       try {
         const response = await chatService.getChatMessages(activeChatId);
         if (response.success && response.data) {
+          // Map backend messages to client-side ChatMessage with role
           const formattedMessages: ChatMessage[] = response.data.map(msg => ({
             ...msg,
             sender_username: (msg.sender_id === currentUser._id) ? currentUser.username : msg.sender_username, 
@@ -124,61 +133,62 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
     fetchMessages();
   }, [activeChatId, currentUser._id, currentUser.username]);
 
-  // Socket.IO integration
+  // --- Socket.IO Integration ---
+
+  // Effect for joining/leaving chat rooms and handling messages
   useEffect(() => {
+    // Sync ref
+    activeChatIdRef.current = activeChatId;
+
     if (!socketService.isConnected()) return;
 
-    // Leave previous room if exists
-    if (activeChatIdRef.current && activeChatIdRef.current !== 'AI_CHAT') {
-      socketService.leaveChat(activeChatIdRef.current);
-    }
-
-    // Update ref and join new room
-    activeChatIdRef.current = activeChatId;
+    // Join/Leave rooms
     if (activeChatId && activeChatId !== 'AI_CHAT') {
       socketService.joinChat(activeChatId);
     }
     
+    // Cleanup previous room if changed is handled by next render or manual leave logic
+    // A simplified approach: leave old room logic is complex to track in useEffect without previous value.
+    // Instead, we trust the user won't be in too many rooms, or we could track 'prevChatId' state.
+    // For this implementation, we just ensure we join.
+    // Ideally, we should leave the previous room.
+    
     return () => {
-       if (activeChatIdRef.current && activeChatIdRef.current !== 'AI_CHAT') {
-         socketService.leaveChat(activeChatIdRef.current);
+       if (activeChatId && activeChatId !== 'AI_CHAT') {
+         socketService.leaveChat(activeChatId);
        }
     };
   }, [activeChatId]);
 
+
   useEffect(() => {
      if (!socketService.isConnected()) return;
-     
-     const handleChatMessage = (newMessage: ChatMessage) => {
-        console.log('Received chat message:', newMessage);
-        console.log('Active chat ID:', activeChatIdRef.current);
-        console.log('Message chat ID:', newMessage.chat_id);
-        
+
+     // Set up message listener
+     socketService.setOnChatMessage((newMessage: ChatMessage) => {
+        // Determine role for display
         const msgWithRole = {
             ...newMessage,
-            sender_username: newMessage.sender_id === currentUser._id ? currentUser.username : newMessage.sender_username,
             role: newMessage.sender_id === currentUser._id ? MessageRole.User : MessageRole.OtherUser
         };
 
-        // Always try string comparison to avoid type issues
-        const isActiveChat = activeChatIdRef.current?.toString() === newMessage.chat_id?.toString();
-        
-        if (isActiveChat) {
-            setMessages((prevMessages) => {
-                // Check if message already exists to avoid duplicates
-                if (prevMessages.some(m => m._id === msgWithRole._id)) {
-                    return prevMessages;
-                }
-                return [...prevMessages, msgWithRole];
+        // 1. If message belongs to active chat, append it
+        if (activeChatIdRef.current === newMessage.chat_id) {
+            setMessages((prev) => {
+                // Deduplicate based on ID just in case
+                if (prev.some(m => m._id === newMessage._id)) return prev;
+                return [...prev, msgWithRole];
             });
         }
 
+        // 2. Update chat list (last message)
         setChats((prevChats) => {
             return prevChats.map(chat => {
                 if (chat._id === newMessage.chat_id) {
                     return {
                         ...chat,
                         lastMessage: msgWithRole,
+                        // Increment unread if not active (simple logic)
                         unreadCount: (activeChatIdRef.current !== chat._id) 
                             ? (chat.unreadCount || 0) + 1 
                             : 0
@@ -186,38 +196,35 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
                 }
                 return chat;
             }).sort((a, b) => {
+                // Move updated chat to top
                 if (a._id === newMessage.chat_id) return -1;
                 if (b._id === newMessage.chat_id) return 1;
                 return 0;
             });
         });
-     };
-     
-     console.log('Setting up chat message handler');
-     socketService.setOnChatMessage(handleChatMessage);
+     });
 
      return () => {
-         console.log('Cleaning up chat message handler');
          socketService.setOnChatMessage(undefined);
      };
-  }, [currentUser._id, currentUser.username]);
+  }, [currentUser._id]);
+
+
+  // --- Event Handlers ---
 
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
-    activeChatIdRef.current = chatId; // Update ref immediately
   };
 
   const handleSendMessage = async (content: string) => {
     if (!activeChatId) return;
-
-    console.log('Sending message:', content);
-    console.log('Active chat ID:', activeChatId);
 
     if (activeChatId === 'AI_CHAT') {
       if (isAiThinking.current) return;
       isAiThinking.current = true;
       setMessageInputDisabled(true);
 
+      // Add user message immediately
       const userMsg: ChatMessage = {
         _id: uuidv4(),
         chat_id: 'AI_CHAT',
@@ -231,6 +238,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
       setAiMessages(prev => [...prev, userMsg]);
 
       try {
+        // Generate AI response
         const historyForAi = aiMessages.map(m => ({
             role: m.role,
             parts: [{ text: m.content }]
@@ -269,6 +277,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
       }
 
     } else {
+      // Standard Chat: Emit via Socket
+      // The server will broadcast the message back, which we catch in onChatMessage
       socketService.emit('sendMessage', {
         chat_id: activeChatId,
         content: content,
@@ -294,67 +304,102 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
             setActiveChatId(newChat._id);
             setShowNewChatModal(false);
         } else {
-            alert(response.message || 'Failed to create chat');
-        }
     } catch (err) {
-        console.error(err);
-        alert('Error creating chat');
+      console.error('AI Error:', err);
+      const errorMsg: ChatMessage = {
+           _id: uuidv4(),
+           chat_id: 'AI_CHAT',
+           sender_id: 'system',
+           sender_username: 'System',
+           content: "Sorry, I'm having trouble connecting to the AI service right now.",
+           timestamp: new Date().toISOString(),
+           is_read: true,
+           role: MessageRole.System
+      };
+      setAiMessages(prev => [...prev, errorMsg]);
     } finally {
-        setLoadingChats(false);
+      setMessageInputDisabled(false);
+      isAiThinking.current = false;
     }
-  };
 
-  return (
-    <div className="flex flex-col h-screen bg-gray-100">
-      <Header currentUser={currentUser} onLogout={onLogout} />
-
-      <div className="flex flex-1 overflow-hidden">
-        <ChatList
-          chats={chats}
-          activeChatId={activeChatId}
-          currentUser={currentUser}
-          onSelectChat={handleSelectChat}
-          onOpenNewChatModal={() => setShowNewChatModal(true)}
-        />
-
-        <main className="flex-1 flex flex-col bg-white">
-          {activeChatId ? (
-            <>
-              <div className="flex-1 overflow-hidden relative flex flex-col">
-                <ChatWindow
-                  messages={activeChatId === 'AI_CHAT' ? aiMessages : messages}
-                  loading={loadingMessages && activeChatId !== 'AI_CHAT'}
-                  currentUserId={currentUser._id}
-                />
-              </div>
-              <MessageInput
-                onSendMessage={handleSendMessage}
-                disabled={messageInputDisabled}
-              />
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
-              <div className="text-center">
-                <div className="text-6xl mb-4">💬</div>
-                <h3 className="text-2xl font-bold mb-2 text-gray-800">Welcome to ChatPro</h3>
-                <p className="text-gray-600">Select a chat from the left or start a new conversation.</p>
-              </div>
-            </div>
-          )}
-        </main>
-      </div>
-
-      {showNewChatModal && (
-        <UserDirectoryModal
-          users={allUsers}
-          currentUser={currentUser}
-          onSelectUser={handleCreateNewChat}
-          onClose={() => setShowNewChatModal(false)}
-          loading={loadingUsers}
-        />
-      )}
-    </div>
-  );
+  } else {
+    // Standard Chat: Emit via Socket
+    // The server will broadcast the message back, which we catch in onChatMessage
+    socketService.emit('sendMessage', {
+      chat_id: activeChatId,
+      content: content,
+    });
+  }
 };
 
-export default DashboardScreen;
+const handleCreateNewChat = async (userToChatWith: User) => {
+  setLoadingChats(true);
+  try {
+      const response = await chatService.createChat({
+          type: 'private',
+          participants: [userToChatWith._id]
+      });
+
+      if (response.success && response.data) {
+          const newChat = response.data;
+          setChats(prev => {
+              const exists = prev.find(c => c._id === newChat._id);
+              if (exists) return prev;
+              return [newChat, ...prev];
+          });
+          setActiveChatId(newChat._id);
+          setShowNewChatModal(false);
+      } else {
+          alert(response.message || 'Failed to create chat');
+      }
+  } catch (err) {
+      console.error(err);
+      alert('Error creating chat');
+  } finally {
+    setLoadingChats(false);
+  }
+};
+
+return (
+  <div className="flex flex-col h-screen bg-gray-100">
+    <Header currentUser={currentUser} onLogout={onLogout} />
+
+    <div className="flex flex-1 overflow-hidden">
+      <ChatList
+        chats={chats}
+        activeChatId={activeChatId}
+        currentUser={currentUser}
+        onSelectChat={handleSelectChat}
+        onOpenNewChatModal={() => setShowNewChatModal(true)}
+      />
+
+      <main className="flex-1 flex flex-col bg-white">
+        {activeChatId ? (
+          <>
+            <div className="flex-1 overflow-hidden relative flex flex-col">
+              <ChatWindow
+                messages={activeChatId === 'AI_CHAT' ? aiMessages : messages}
+                loading={loadingMessages && activeChatId !== 'AI_CHAT'}
+                currentUserId={currentUser._id}
+              />
+            </div>
+            <MessageInput
+              onSendMessage={handleSendMessage}
+              disabled={messageInputDisabled}
+            />
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
+            <div className="text-center">
+              <div className="text-6xl mb-4">💬</div>
+              <h3 className="text-2xl font-bold mb-2 text-gray-800">Welcome to ChatPro</h3>
+              <p className="text-gray-600">Select a chat from the left or start a new conversation.</p>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+
+    {showNewChatModal && (
+      <UserDirectoryModal
+        users={allUsers}

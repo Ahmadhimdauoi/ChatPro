@@ -28,6 +28,30 @@ class SocketService {
   public setOnChatMessage(handler: ((message: ChatMessage) => void) | undefined) { this.handlers.onChatMessage = handler; }
 
   /**
+   * Register a callback for when a chat message is received
+   * @param callback The function to call when a chat message is received
+   */
+  public onMessageReceived(callback: (message: ChatMessage) => void) {
+    this.handlers.onChatMessage = callback;
+  }
+
+  /**
+   * Remove a specific event listener
+   * @param event The event name to remove listener for
+   * @param callback The callback function to remove
+   */
+  public removeListener(event: string, callback?: any) {
+    if (this.socket) {
+      if (callback) {
+        this.socket.off(event, callback);
+      } else {
+        this.socket.off(event);
+      }
+      console.log(`[SocketService] Removed listener for event: ${event}`);
+    }
+  }
+
+  /**
    * Establishes a Socket.IO connection.
    * Authentication can be handled here by sending a JWT token.
    * @param token Optional JWT token for authentication.
@@ -83,10 +107,21 @@ class SocketService {
   }
 
   /**
+   * Removes all event listeners from the socket.
+   */
+  public removeAllListeners() {
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      console.log('[SocketService] Removed all event listeners.');
+    }
+  }
+
+  /**
    * Disconnects the Socket.IO connection.
    */
   public disconnect() {
     if (this.socket) {
+      this.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
       console.log('[SocketService] Disconnected from Socket.IO server.');

@@ -23,23 +23,26 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled }) 
   };
 
   return (
-    <div className="flex items-center p-4 bg-card border-t border-border sticky bottom-0">
+    <div className="flex items-center p-4 bg-white border-t border-gray-200 shadow-lg">
       <textarea
-        className="flex-1 resize-none h-12 p-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mr-2 bg-background text-textPrimary placeholder-textSecondary"
+        className="flex-1 resize-none h-12 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3 bg-gray-50 text-gray-800 placeholder-gray-400"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyPress={handleKeyPress}
-        placeholder={disabled ? 'Waiting for response...' : 'Type your message...'}
+        placeholder={disabled ? 'Waiting for response...' : 'Type a message...'}
         disabled={disabled}
         rows={1}
         style={{ overflowY: 'hidden' }} // Hide scrollbar
       />
       <button
-        className="bg-primary hover:bg-secondary text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
         onClick={handleSend}
         disabled={disabled || !input.trim()}
+        title="Send message"
       >
-        Send
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
       </button>
     </div>
   );

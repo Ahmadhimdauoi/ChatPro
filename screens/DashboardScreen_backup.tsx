@@ -126,50 +126,32 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
 
   // Socket.IO integration
   useEffect(() => {
+    activeChatIdRef.current = activeChatId;
     if (!socketService.isConnected()) return;
 
-    // Leave previous room if exists
-    if (activeChatIdRef.current && activeChatIdRef.current !== 'AI_CHAT') {
-      socketService.leaveChat(activeChatIdRef.current);
-    }
-
-    // Update ref and join new room
-    activeChatIdRef.current = activeChatId;
     if (activeChatId && activeChatId !== 'AI_CHAT') {
       socketService.joinChat(activeChatId);
     }
     
     return () => {
-       if (activeChatIdRef.current && activeChatIdRef.current !== 'AI_CHAT') {
-         socketService.leaveChat(activeChatIdRef.current);
+       if (activeChatId && activeChatId !== 'AI_CHAT') {
+         socketService.leaveChat(activeChatId);
        }
     };
   }, [activeChatId]);
 
   useEffect(() => {
      if (!socketService.isConnected()) return;
-     
-     const handleChatMessage = (newMessage: ChatMessage) => {
-        console.log('Received chat message:', newMessage);
-        console.log('Active chat ID:', activeChatIdRef.current);
-        console.log('Message chat ID:', newMessage.chat_id);
-        
+     socketService.setOnChatMessage((newMessage: ChatMessage) => {
         const msgWithRole = {
             ...newMessage,
-            sender_username: newMessage.sender_id === currentUser._id ? currentUser.username : newMessage.sender_username,
             role: newMessage.sender_id === currentUser._id ? MessageRole.User : MessageRole.OtherUser
         };
 
-        // Always try string comparison to avoid type issues
-        const isActiveChat = activeChatIdRef.current?.toString() === newMessage.chat_id?.toString();
-        
-        if (isActiveChat) {
-            setMessages((prevMessages) => {
-                // Check if message already exists to avoid duplicates
-                if (prevMessages.some(m => m._id === msgWithRole._id)) {
-                    return prevMessages;
-                }
-                return [...prevMessages, msgWithRole];
+        if (activeChatIdRef.current === newMessage.chat_id) {
+            setMessages((prev) => {
+                if (prev.some(m => m._id === newMessage._id)) return prev;
+                return [...prev, msgWithRole];
             });
         }
 
@@ -191,27 +173,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
                 return 0;
             });
         });
-     };
-     
-     console.log('Setting up chat message handler');
-     socketService.setOnChatMessage(handleChatMessage);
+     });
 
      return () => {
-         console.log('Cleaning up chat message handler');
          socketService.setOnChatMessage(undefined);
      };
-  }, [currentUser._id, currentUser.username]);
+  }, [currentUser._id]);
 
   const handleSelectChat = (chatId: string) => {
     setActiveChatId(chatId);
-    activeChatIdRef.current = chatId; // Update ref immediately
   };
 
   const handleSendMessage = async (content: string) => {
     if (!activeChatId) return;
-
-    console.log('Sending message:', content);
-    console.log('Active chat ID:', activeChatId);
 
     if (activeChatId === 'AI_CHAT') {
       if (isAiThinking.current) return;
