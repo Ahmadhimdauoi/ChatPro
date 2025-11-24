@@ -4,6 +4,7 @@ import ChatList from '../components/ChatList';
 import ChatWindow from '../components/ChatWindow';
 import MessageInput from '../components/MessageInput';
 import UserDirectoryModal from '../components/UserDirectoryModal';
+import GroupChatModal from '../components/GroupChatModal';
 import { User, Chat, ChatMessage, MessageRole } from '../types';
 import { chatService, userService } from '../services/apiService';
 import { socketService } from '../services/socketService';
@@ -27,6 +28,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
   const [messageInputDisabled, setMessageInputDisabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [showGroupChatModal, setShowGroupChatModal] = useState(false);
 
   const activeChatIdRef = useRef<string | null>(null);
   const isAiThinking = useRef(false);
@@ -304,6 +306,34 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
     }
   };
 
+  const handleCreateGroupChat = async (groupName: string, participantIds: string[]) => {
+    setLoadingChats(true);
+    try {
+        const response = await chatService.createGroupChat({
+            name: groupName,
+            participants: participantIds
+        });
+
+        if (response.success && response.data) {
+            const newChat = response.data;
+            setChats(prev => {
+                const exists = prev.find(c => c._id === newChat._id);
+                if (exists) return prev;
+                return [newChat, ...prev];
+            });
+            setActiveChatId(newChat._id);
+            setShowGroupChatModal(false);
+        } else {
+            alert(response.message || 'Failed to create group chat');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error creating group chat');
+    } finally {
+        setLoadingChats(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <Header currentUser={currentUser} onLogout={onLogout} />
@@ -315,6 +345,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
           currentUser={currentUser}
           onSelectChat={handleSelectChat}
           onOpenNewChatModal={() => setShowNewChatModal(true)}
+          onOpenGroupChatModal={() => setShowGroupChatModal(true)}
         />
 
         <main className="flex-1 flex flex-col bg-white">
@@ -351,6 +382,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
           onSelectUser={handleCreateNewChat}
           onClose={() => setShowNewChatModal(false)}
           loading={loadingUsers}
+        />
+      )}
+
+      {showGroupChatModal && (
+        <GroupChatModal
+          isOpen={showGroupChatModal}
+          onClose={() => setShowGroupChatModal(false)}
+          currentUser={currentUser}
+          allUsers={allUsers}
+          onCreateGroup={handleCreateGroupChat}
+          loading={loadingChats}
         />
       )}
     </div>

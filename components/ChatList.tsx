@@ -6,10 +6,11 @@ interface ChatListProps {
   activeChatId: string | null;
   currentUser: User;
   onSelectChat: (chatId: string) => void;
-  onOpenNewChatModal: () => void; // Added for opening the new chat modal
+  onOpenNewChatModal: () => void; // For private chat creation
+  onOpenGroupChatModal?: () => void; // For group chat creation (Admin only)
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, onSelectChat, onOpenNewChatModal }) => {
+const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, onSelectChat, onOpenNewChatModal, onOpenGroupChatModal }) => {
   const getChatDisplayName = (chat: Chat): string => {
     if (chat.type === 'group') {
       return chat.name || 'Group Chat';
@@ -26,13 +27,24 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, o
     <aside className="w-1/4 border-r border-border p-4 flex flex-col bg-card">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold text-textPrimary">Chats</h3>
-        <button
-          onClick={onOpenNewChatModal}
-          className="bg-primary hover:bg-secondary text-white font-bold py-1 px-3 rounded-lg shadow-md transition-colors duration-200 text-sm"
-          aria-label="Start a new chat"
-        >
-          + New Chat
-        </button>
+        <div className="flex space-x-2">
+          {currentUser.role === 'Admin' && onOpenGroupChatModal && (
+            <button
+              onClick={onOpenGroupChatModal}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded-lg shadow-md transition-colors duration-200 text-sm"
+              aria-label="Create a new group chat"
+            >
+              + Group
+            </button>
+          )}
+          <button
+            onClick={onOpenNewChatModal}
+            className="bg-primary hover:bg-secondary text-white font-bold py-1 px-3 rounded-lg shadow-md transition-colors duration-200 text-sm"
+            aria-label="Start a new chat"
+          >
+            + New Chat
+          </button>
+        </div>
       </div>
 
       <div className="mb-4">

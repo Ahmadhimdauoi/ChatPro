@@ -30,6 +30,11 @@ const UserSchema = new mongoose.Schema({
     enum: ['active', 'inactive', 'offline', 'online'],
     default: 'offline',
   },
+  role: {
+    type: String,
+    enum: ['Admin', 'Employee'],
+    default: 'Employee',
+  },
 }, {
   timestamps: true, // Adds createdAt and updatedAt timestamps
 });

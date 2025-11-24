@@ -34,6 +34,7 @@ const App: React.FC = () => {
             email: decoded.email,
             department: 'Unknown', // Placeholder, would come from actual user data
             status: 'online', // Placeholder
+            role: 'Employee', // Default role - will be updated on full login
           };
           setJwtToken(token);
           setCurrentUser(dummyUser);

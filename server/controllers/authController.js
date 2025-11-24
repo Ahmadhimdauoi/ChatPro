@@ -53,6 +53,7 @@ const register = async (req, res) => {
           email: user.email,
           department: user.department,
           status: user.status,
+          role: user.role, // Add role field
         },
         token,
       },
@@ -97,6 +98,7 @@ const login = async (req, res) => {
           email: user.email,
           department: user.department,
           status: user.status,
+          role: user.role, // Add role field
         },
         token,
       },

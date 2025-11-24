@@ -19,6 +19,7 @@ export interface User {
   email: string;
   department: string;
   status: 'active' | 'inactive' | 'offline' | 'online'; // Example statuses
+  role: 'Admin' | 'Employee'; // User role for permissions
   // Removed isOnline as status from backend is sufficient
 }
 
@@ -39,8 +40,9 @@ export interface ChatParticipant {
 export interface Chat {
   _id: string;
   type: 'private' | 'group';
-  name?: string; // Optional for private chats
+  name?: string; // Optional for private chats, required for groups
   participants: ChatParticipant[]; // Array of populated User objects
+  groupAdmin?: ChatParticipant; // Only for group chats - the admin user
   createdAt: string; // ISO Date string
   lastMessage?: ChatMessage; // Optional: last message for chat list preview
   unreadCount?: number; // Optional: number of unread messages

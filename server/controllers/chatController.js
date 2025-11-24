@@ -64,7 +64,12 @@ const createChat = async (req, res) => {
       if (uniqueParticipants.length < 2) { // A group chat technically needs at least two if one is the creator
         return res.status(400).json({ success: false, message: 'Group chat must have at least two participants.' });
       }
-      chat = new Chat({ type, name: name.trim(), participants: uniqueParticipants });
+      chat = new Chat({ 
+        type, 
+        name: name.trim(), 
+        participants: uniqueParticipants,
+        groupAdmin: currentUserId // Set the creator as group admin
+      });
 
     } else {
       return res.status(400).json({ success: false, message: 'Invalid chat type.' });
@@ -75,6 +80,7 @@ const createChat = async (req, res) => {
     // Populate participants for the response
     const populatedChat = await Chat.findById(chat._id)
       .populate('participants', 'username status email') // Select relevant fields
+      .populate('groupAdmin', 'username email') // Populate group admin
       .lean(); // Use .lean() for plain JS objects
 
     res.status(201).json({

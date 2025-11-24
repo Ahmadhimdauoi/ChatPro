@@ -21,6 +21,9 @@ const apiRequest = async <T>(
 
   if (requiresAuth) {
     const token = localStorage.getItem('jwtToken');
+    console.log(' Token from localStorage:', token ? ' Found' : ' Not found');
+    console.log(' Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'N/A');
+    
     if (!token) {
       // For cases where token is missing for authenticated routes
       // You might want to automatically redirect to login or throw a specific error
@@ -31,6 +34,7 @@ const apiRequest = async <T>(
       throw new Error('Authentication token not found. Please log in again.');
     }
     headers['Authorization'] = `Bearer ${token}`;
+    console.log(' Authorization header set:', `Bearer ${token.substring(0, 20)}...`);
   }
 
   const config: RequestInit = {
@@ -128,6 +132,23 @@ export const chatService = {
     participants: string[]; // Array of User _id strings
   }): Promise<ApiResponse<Chat>> => {
     return apiRequest<Chat>('/chats', 'POST', chatData, true);
+  },
+
+  /**
+   * Creates a new group chat (Admin only).
+   * @param chatData Data for the new group chat (name, participants).
+   * @returns A promise that resolves to the API response, containing the created Chat object.
+   */
+  createGroupChat: async (chatData: {
+    name: string;
+    participants: string[]; // Array of User _id strings
+  }): Promise<ApiResponse<Chat>> => {
+    const groupChatData = {
+      type: 'group',
+      name: chatData.name,
+      participants: chatData.participants
+    };
+    return apiRequest<Chat>('/chats/group', 'POST', groupChatData, true);
   },
 
   /**

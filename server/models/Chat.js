@@ -19,6 +19,13 @@ const ChatSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Chat participants are required'],
   }],
+  groupAdmin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: function() {
+      return this.type === 'group';
+    },
+  },
   createdAt: {
     type: Date,
     default: Date.now,
