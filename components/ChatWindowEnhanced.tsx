@@ -110,7 +110,7 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
   };
 
   const renderFileAttachment = (fileAttachment: FileAttachment, isCurrentUser: boolean) => {
-    const isImage = fileAttachment.mimeType.startsWith('image/');
+    const isImage = fileAttachment.mimeType?.startsWith('image/') || false;
     const fileIcon = isImage ? '🖼️' : '📄';
     
     return (
@@ -133,7 +133,9 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
             <div className={`text-xs ${
               isCurrentUser ? 'text-blue-200' : 'text-gray-500'
             }`}>
-              {(fileAttachment.size / 1024).toFixed(1)} KB
+              {typeof fileAttachment.size === 'number' && !isNaN(fileAttachment.size) 
+                ? `${(fileAttachment.size / 1024).toFixed(1)} KB` 
+                : 'Size N/A'}
             </div>
           </div>
           <a
@@ -220,7 +222,14 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
               )}
 
               {/* File attachment */}
-              {message.fileAttachment && renderFileAttachment(message.fileAttachment, isCurrentUser)}
+              {message.fileAttachment && 
+               message.fileAttachment.url && 
+               message.fileAttachment.originalName && 
+               Object.keys(message.fileAttachment).length > 0 && (
+                <div className="mt-2">
+                  {renderFileAttachment(message.fileAttachment, isCurrentUser)}
+                </div>
+              )}
 
               <div className={`text-xs mt-2 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'} self-end`}>
                 {formatTimestamp(message.timestamp)}
