@@ -148,7 +148,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
   const handleRoleChange = async (userId: string, newRole: string) => {
     // Only Admins can change user roles
     if (!isAdmin) {
-      alert('❌ فقط الأدمن يمكنه تغيير أدوار المستخدمين');
+      alert('❌ Only Admins can change user roles');
       return;
     }
     
@@ -170,18 +170,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         throw new Error(response.message);
       }
     } catch (err: any) {
-      alert(`❌ فشل تحديث الدور: ${err.message}`);
+      alert(`❌ Failed to update role: ${err.message}`);
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
     // Only Admins can delete users
     if (!canDeleteUsers) {
-      alert('❌ فقط الأدمن يمكنه حذف المستخدمين');
+      alert('❌ Only Admins can delete users');
       return;
     }
     
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       return;
     }
 
@@ -191,12 +191,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       if (response.success) {
         // Remove user from local state
         setUsers(prevUsers => prevUsers.filter(user => user._id !== userId));
-        alert('✅ تم حذف المستخدم بنجاح');
+        alert('✅ User deleted successfully');
       } else {
         throw new Error(response.message);
       }
     } catch (err: any) {
-      alert(`❌ فشل حذف المستخدم: ${err.message}`);
+      alert(`❌ Failed to delete user: ${err.message}`);
     }
   };
 
@@ -205,7 +205,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
     try {
       // Validation: Check if at least 2 participants are selected
       if (groupForm.participants.length < 2) {
-        alert('❌ يجب اختيار مشاركين اثنين على الأقل لإنشاء مجموعة');
+        alert('❌ Please select at least 2 participants to create a group');
         return;
       }
       
@@ -252,7 +252,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         });
         setGroupImage(null);
         setImagePreview(null);
-        alert('✅ تم إنشاء المجموعة بنجاح!');
+        alert('✅ Group created successfully!');
       } else {
         throw new Error(response.message);
       }
@@ -266,12 +266,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
     try {
       // Validation
       if (!callForm.title.trim()) {
-        alert('❌ يرجى إدخال موضوع المكالمة');
+        alert('❌ Please enter call title');
         return;
       }
       
       if (callForm.groupIds.length === 0) {
-        alert('❌ يرجى اختيار مجموعة واحدة على الأقل');
+        alert('❌ Please select at least one group');
         return;
       }
       
@@ -338,7 +338,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       }, 0);
       
       // Show success message
-      alert(`✅ تم بدء المكالمة الجماعية بنجاح!\n\n📞 **الموضوع:** ${callForm.title}\n👥 **المجموعات:** ${callForm.groupIds.length}\n🔗 **رابط الانضمام:** ${joinUrl}\n📢 **تم إعلام ${totalMembers} عضواً\n📨 **تم إرسال رسالة لجميع المجموعات**\n\n📝 سيتم تسجيل المكالمة وتوثيقها تلقائياً`);
+      alert(`✅ Group call started successfully!\n\n📞 **Topic:** ${callForm.title}\n👥 **Groups:** ${callForm.groupIds.length}\n🔗 **Join Link:** ${joinUrl}\n📢 **Notified ${totalMembers} members**\n📨 **Message sent to all groups**\n\n📝 Call will be recorded and documented automatically`);
       
       // Reset form
       setShowCallModal(false);
@@ -350,12 +350,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       });
       
     } catch (err: any) {
-      alert(`فشل بدء المكالمة الجماعية: ${err.message}`);
+      alert(`Failed to start group call: ${err.message}`);
     }
   };
 
   const handleEndCall = async (callId: string) => {
-    if (!window.confirm('هل أنت متأكد من إنهاء هذه المكالمة؟ سيتم إنشاء التقرير الموثق تلقائياً.')) {
+    if (!window.confirm('Are you sure you want to end this call? The documented report will be generated automatically.')) {
       return;
     }
 
@@ -374,52 +374,52 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         sessionId: call._id,
         callTitle: call.title,
         groups: call.groups.map(g => g.name),
-        participants: [call.hostUsername, 'أحمد محمد', 'فاطمة علي', 'محمد سعيد', 'خالد عمر'], // Mock participants
+        participants: [call.hostUsername, 'Ahmed Mohammed', 'Fatima Ali', 'Mohammed Saeed', 'Khaled Omar'], // Mock participants
         duration: duration,
         transcription: {
           sessionId: call._id,
-          fullText: `بدأت المكالمة في ${startTime.toLocaleTimeString('ar-SA')}\n\n${call.hostUsername}: مرحباً بالجميع، نبدأ اجتماعنا اليوم بمناقشة ${call.title}\n\nأحمد محمد: شكراً على الدعوة، لدي بعض الأفكار حول هذا الموضوع\n\nفاطمة علي: أتفق مع أحمد، وأود إضافة نقطة مهمة\n\nمحمد سعيد: من وجهة نظري، يجب أن نركز على الجانب العملي\n\nخالد عمر: اقترح أن نضع خطة زمنية واضحة\n\n${call.hostUsername}: ممتاز، هذه نقاط مهمة. لنلخص ما تم الاتفاق عليه...\n\nتم الانتهاء من المكالمة في ${endTime.toLocaleTimeString('ar-SA')}`,
-          summary: 'تم مناقشة الموضوع الرئيسي مع مشاركة فعالة من جميع الحضور واتخاذ قرارات مهمة',
+          fullText: `Call started at ${startTime.toLocaleTimeString('en-US')}\n\n${call.hostUsername}: Welcome everyone, let's start our meeting today to discuss ${call.title}\n\nAhmed Mohammed: Thanks for the invitation, I have some ideas about this topic\n\nFatima Ali: I agree with Ahmed, and I'd like to add an important point\n\nMohammed Saeed: From my perspective, we should focus on the practical aspect\n\nKhaled Omar: I suggest we set a clear timeline\n\n${call.hostUsername}: Excellent, these are important points. Let's summarize what we agreed on...\n\nCall ended at ${endTime.toLocaleTimeString('en-US')}`,
+          summary: 'Main topic was discussed with active participation from all attendees and important decisions were made',
           keyPoints: [
-            'تحديد الأهداف الرئيسية للمشروع',
-            'وضع خطة زمنية للتنفيذ',
-            'توزيع المهام على أعضاء الفريق',
-            'تحديد الموارد المطلوبة'
+            'Identify main project objectives',
+            'Set implementation timeline',
+            'Distribute tasks among team members',
+            'Identify required resources'
           ],
           actionItems: [
-            'إعداد تقرير مفصل خلال الأسبوع القادم',
-            'عقد اجتماع متابعة بعد أسبوعين',
-            'تحديث الوثائق الحالية',
-            'إبلاغ جميع الأقسام بالقرارات'
+            'Prepare detailed report within next week',
+            'Hold follow-up meeting in two weeks',
+            'Update current documents',
+            'Inform all departments of decisions'
           ],
           createdAt: endTime.toISOString()
         },
-        aiSummary: `**ملخص تنفيذي للمكالمة**
+        aiSummary: `**Executive Call Summary**
 
-تم عقد مكالمة جماعية لمناقشة "${call.title}" بمشاركة ${call.groups.length} مجموعات. استمرت المكالمة لمدة ${Math.floor(duration / 60)} دقيقة وتميزت بالنقاش البنّاء والمشاركة الفعالة من جميع الحضور.
+A group call was held to discuss "${call.title}" with ${call.groups.length} groups participating. The call lasted ${Math.floor(duration / 60)} minutes and was characterized by constructive discussion and active participation from all attendees.
 
-**القرارات الرئيسية:**
-• الاتفاق على خطة عمل واضحة
-• تحديد المسؤوليات والمهام
-• وضع جدول زمني للمتابعة
+**Key Decisions:**
+• Agreement on clear action plan
+• Assignment of responsibilities and tasks
+• Setting timeline for follow-up
 
-**التوصيات:**
-• ضرورة المتابعة الدورية للتقدم المحرز
-• التواصل المستمر بين جميع الأقسام
-• إعداد تقارير دورية عن سير العمل
+**Recommendations:**
+• Need for regular progress monitoring
+• Continuous communication between all departments
+• Preparation of periodic reports on work progress
 
-**النتائج المتوقعة:**
-تحسين الأداء العام وزيادة الكفاءة في تنفيذ المهام المحددة.`,
+**Expected Outcomes:**
+Improved overall performance and increased efficiency in executing assigned tasks.`,
         keyDecisions: [
-          'الموافقة على الخطة المقترحة',
-          'تحديد مواعيد نهائية للمهام',
-          'تفويض الصلاحيات للمسؤولين'
+          'Approval of proposed plan',
+          'Setting deadlines for tasks',
+          'Delegating authority to supervisors'
         ],
         actionItems: [
-          'إعداد خطة تفصيلية (المسؤول: أحمد محمد)',
-          'تجهيز الموارد المطلوبة (المسؤول: فاطمة علي)',
-          'متابعة التنفيذ (المسؤول: محمد سعيد)',
-          'إعداد التقارير الدورية (المسؤول: خالد عمر)'
+          'Prepare detailed plan (Responsible: Ahmed Mohammed)',
+          'Prepare required resources (Responsible: Fatima Ali)',
+          'Follow up on implementation (Responsible: Mohammed Saeed)',
+          'Prepare periodic reports (Responsible: Khaled Omar)'
         ],
         recordingUrl: `https://recordings.chatpro.com/${call._id}.mp4`,
         createdAt: endTime.toISOString()
@@ -429,7 +429,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       setActiveCalls(prev => prev.filter(c => c._id !== callId));
 
       // Create documentation message for groups
-      const documentationMessage = `📋 **تقرير المكالمة الموثقة**\n\n**الموضوع:** ${call.title}\n**المدة:** ${Math.floor(duration / 60)} دقيقة ${duration % 60} ثانية\n**المشاركون:** ${mockDocumentation.participants.length}\n**المجموعات:** ${call.groups.join(', ')}\n\n**الملخص التلقائي (AI):**\n${mockDocumentation.aiSummary}\n\n**النقاط الرئيسية:**\n${mockDocumentation.transcription.keyPoints.map(p => `• ${p}`).join('\n')}\n\n**القرارات المتخذة:**\n${mockDocumentation.keyDecisions.map(d => `• ${d}`).join('\n')}\n\n**الإجراءات المطلوبة:**\n${mockDocumentation.actionItems.map(a => `• ${a}`).join('\n')}\n\n**التسجيل:** [مشاهدة التسجيل](${mockDocumentation.recordingUrl})\n\n**النسخة الكاملة:**\n${mockDocumentation.transcription.fullText}`;
+      const documentationMessage = `📋 **Documented Call Report**\n\n**Topic:** ${call.title}\n**Duration:** ${Math.floor(duration / 60)} minutes ${duration % 60} seconds\n**Participants:** ${mockDocumentation.participants.length}\n**Groups:** ${call.groups.join(', ')}\n\n**Automatic Summary (AI):**\n${mockDocumentation.aiSummary}\n\n**Key Points:**\n${mockDocumentation.transcription.keyPoints.map(p => `• ${p}`).join('\n')}\n\n**Decisions Made:**\n${mockDocumentation.keyDecisions.map(d => `• ${d}`).join('\n')}\n\n**Required Actions:**\n${mockDocumentation.actionItems.map(a => `• ${a}`).join('\n')}\n\n**Recording:** [View Recording](${mockDocumentation.recordingUrl})\n\n**Full Transcript:**\n${mockDocumentation.transcription.fullText}`;
 
       // Send actual documentation message to all participating groups
       for (const groupId of call.groupIds) {
@@ -451,15 +451,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       console.log('📋 Documentation sent to groups:', call.groupIds);
       console.log('📄 Documentation message:', documentationMessage);
 
-      alert(`✅ تم إنهاء المكالمة وإرسال التقرير الموثق بنجاح!\n\n📊 **المدة:** ${Math.floor(duration / 60)} دقيقة\n📝 **تم إرسال التقرير لـ ${call.groupIds.length} مجموعة\n👥 **شمل ${mockDocumentation.participants.length} مشاركين**\n\n📄 **الملخص التلقائي تم إنشاؤه بالذكاء الاصطناعي**`);
+      alert(`✅ Call ended and documented report sent successfully!\n\n📊 **Duration:** ${Math.floor(duration / 60)} minutes\n📝 **Report sent to ${call.groupIds.length} groups**\n👥 **Included ${mockDocumentation.participants.length} participants**\n\n📄 **Automatic summary generated with AI**`);
       
     } catch (err: any) {
-      alert(`فشل إنهاء المكالمة: ${err.message}`);
+      alert(`Failed to end call: ${err.message}`);
     }
   };
 
   const handleDeleteGroup = async (groupId: string, groupName: string) => {
-    if (!window.confirm(`هل أنت متأكد من حذف مجموعة "${groupName}"؟\n\nهذا الإجراء لا يمكن التراجع عنه وسيتم حذف جميع الرسائل والمشاركين.`)) {
+    if (!window.confirm(`Are you sure you want to delete group "${groupName}"?\n\nThis action cannot be undone and all messages and participants will be deleted.`)) {
       return;
     }
 
@@ -467,12 +467,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       const response = await adminService.deleteGroup(groupId);
       if (response.success) {
         setGroups(prev => prev.filter(g => g._id !== groupId));
-        alert(`تم حذف المجموعة "${groupName}" بنجاح`);
+        alert(`Group "${groupName}" deleted successfully`);
       } else {
         throw new Error(response.message);
       }
     } catch (err: any) {
-      alert(`فشل حذف المجموعة: ${err.message}`);
+      alert(`Failed to delete group: ${err.message}`);
     }
   };
 
@@ -482,12 +482,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       if (response.success) {
         setShowAddMembersModal(false);
         setAddMembersForm({ participants: [] });
-        alert('تم إضافة الأعضاء بنجاح');
+        alert('Members added successfully');
       } else {
         throw new Error(response.message);
       }
     } catch (err: any) {
-      alert(`فشل إضافة الأعضاء: ${err.message}`);
+      alert(`Failed to add members: ${err.message}`);
     }
   };
 
@@ -495,7 +495,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
     try {
       const response = await adminService.publishAnnouncement(announcementForm);
       if (response.success) {
-        alert(`تم نشر الإعلان إلى ${announcementForm.groupIds.length} مجموعة بنجاح`);
+        alert(`Announcement published to ${announcementForm.groupIds.length} groups successfully`);
       } else {
         throw new Error(response.message);
       }
@@ -530,14 +530,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
           if (createChatResponse.success && createChatResponse.data) {
             onSelectChat?.(createChatResponse.data._id);
             onClose?.();
-            alert('✅ تم إنشاء محادثة خاصة بنجاح!');
+            alert('✅ Private chat created successfully!');
           } else {
             throw new Error(createChatResponse.message || 'Failed to create chat');
           }
         }
       }
     } catch (err: any) {
-      alert(`❌ فشل إنشاء المحادثة: ${err.message}`);
+      alert(`❌ Failed to create chat: ${err.message}`);
     }
   };
 
@@ -796,7 +796,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                             <button
                               onClick={() => handleChatWithUser(user._id)}
                               className="text-green-600 hover:text-green-900"
-                              title="محادثة خاصة"
+                              title="Private Chat"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -811,7 +811,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                                   setShowRoleModal(true);
                                 }}
                                 className="text-blue-600 hover:text-blue-900"
-                                title="تغيير الدور"
+                                title="Change Role"
                                 disabled={!isAdmin}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -822,7 +822,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                                 <button
                                   onClick={() => handleDeleteUser(user._id)}
                                   className="text-red-600 hover:text-red-900"
-                                  title="حذف المستخدم"
+                                  title="Delete User"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -832,7 +832,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                             </>
                           )}
                           {!canManageUsers && user._id !== currentUser._id && (
-                            <span className="text-gray-400 text-xs">صلاحيات محدودة</span>
+                            <span className="text-gray-400 text-xs">Limited Permissions</span>
                           )}
                         </div>
                       </td>
@@ -848,7 +848,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         {activeTab === 'groups' && (
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">إدارة المجموعات</h2>
+              <h2 className="text-xl font-semibold">Group Management</h2>
               <button
                 onClick={() => setShowCreateGroupModal(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"
@@ -856,7 +856,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                إنشاء مجموعة
+                Create Group
               </button>
             </div>
 
@@ -899,8 +899,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                   )}
                   
                   <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                    <span>👥 {group.participants?.length || 0} عضو</span>
-                    <span>👤 المشرف: {group.groupAdmin?.username || 'غير معروف'}</span>
+                    <span>👥 {group.participants?.length || 0} members</span>
+                    <span>👤 Admin: {group.groupAdmin?.username || 'Unknown'}</span>
                   </div>
                   
                   <div className="flex space-x-2">
@@ -911,7 +911,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                       }}
                       className="flex-1 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
                     >
-                      إضافة أعضاء
+                      Add Members
                     </button>
                     <button
                       onClick={() => {
@@ -923,13 +923,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                       }}
                       className="flex-1 bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
                     >
-                      مكالمة جماعية
+                      Group Call
                     </button>
                     <button
                       onClick={() => handleDeleteGroup(group._id, group.name)}
                       className="flex-1 bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                     >
-                      حذف
+                      Delete
                     </button>
                   </div>
                 </div>
@@ -943,7 +943,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         {activeTab === 'calls' && (
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">إدارة المكالمات الجماعية والتوثيق التلقائي</h2>
+              <h2 className="text-xl font-semibold">Group Calls & Auto-Documentation</h2>
               <button
                 onClick={() => setShowCallModal(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center"
@@ -951,19 +951,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                مكالمة جماعية جديدة
+                New Group Call
               </button>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-900 mb-2">📞 كيفية عمل المكالمات الموثقة:</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">📞 How Documented Calls Work:</h3>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• اختر المجموعات المستهدفة لبدء المكالمة الجماعية</li>
-                <li>• حدد موضوع المكالمة والوصف (اختياري)</li>
-                <li>• سيتم إرسال إشعارات فورية لجميع الأعضاء</li>
-                <li>• يبدأ التسجيل والتحويل النصي تلقائياً مع بدء المكالمة</li>
-                <li>• عند الانتهاء، يتم إنشاء تقرير موثق وملخص تلقائي</li>
-                <li>• يتم إرسال التقرير لجميع المجموعات المشاركة</li>
+                <li>• Select target groups to start the group call</li>
+                <li>• Set call topic and description (optional)</li>
+                <li>• Instant notifications will be sent to all members</li>
+                <li>• Recording and transcription starts automatically when call begins</li>
+                <li>• When ended, a documented report and automatic summary are created</li>
+                <li>• Report is sent to all participating groups</li>
               </ul>
             </div>
 
@@ -971,12 +971,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3 flex items-center">
                 <span className="mr-2">🔴</span>
-                المكالمات النشطة
+                Active Calls
               </h3>
               {activeCalls.length === 0 ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-                  <div className="text-gray-500 text-lg mb-2">لا توجد مكالمات نشطة حالياً</div>
-                  <div className="text-gray-400 text-sm">ابدأ مكالمة جماعية جديدة لرؤيتها هنا</div>
+                  <div className="text-gray-500 text-lg mb-2">No active calls currently</div>
+                  <div className="text-gray-400 text-sm">Start a new group call to see it here</div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -986,15 +986,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                         <div>
                           <h4 className="font-semibold text-gray-900">{call.title}</h4>
                           <p className="text-sm text-gray-600 mt-1">
-                            المستضيف: {call.hostUsername} | المجموعات: {call.groups.length}
+                            Host: {call.hostUsername} | Groups: {call.groups.length}
                           </p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                             <span className="flex items-center">
                               <span className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
-                              نشط
+                              Active
                             </span>
-                            <span>البدء: {new Date(call.startTime).toLocaleTimeString('ar-SA')}</span>
-                            <span>المشاركون: {call.participants.length}</span>
+                            <span>Start: {new Date(call.startTime).toLocaleTimeString('en-US')}</span>
+                            <span>Participants: {call.participants.length}</span>
                           </div>
                         </div>
                         <div className="flex space-x-2">
@@ -1002,13 +1002,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                             className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
                             onClick={() => window.open(call.joinUrl, '_blank')}
                           >
-                            انضم
+                            Join
                           </button>
                           <button
                             className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
                             onClick={() => handleEndCall(call._id)}
                           >
-                            إنهاء
+                            End
                           </button>
                         </div>
                       </div>
@@ -1026,35 +1026,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">إنشاء مجموعة جديدة</h3>
-              <p className="text-sm text-gray-600 mt-1">إنشاء مجموعة دردشة جديدة للتعاون الفريقي</p>
+              <h3 className="text-lg font-semibold text-gray-900">Create New Group</h3>
+              <p className="text-sm text-gray-600 mt-1">Create a new group chat for team collaboration</p>
             </div>
             
             <div className="px-6 py-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">اسم المجموعة *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Group Name *</label>
                 <input
                   type="text"
                   value={groupForm.name}
                   onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="أدخل اسم المجموعة"
+                  placeholder="Enter group name"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea
                   value={groupForm.description}
                   onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
-                  placeholder="وصف المجموعة (اختياري)"
+                  placeholder="Group description (optional)"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الفئة</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
                   value={groupForm.category}
                   onChange={(e) => setGroupForm({ ...groupForm, category: e.target.value as any })}
@@ -1062,18 +1062,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                   aria-label="Select group category"
                   title="Group category"
                 >
-                  <option value="general">عام</option>
-                  <option value="marketing">التسويق</option>
-                  <option value="development">التطوير</option>
-                  <option value="sales">المبيعات</option>
-                  <option value="hr">الموارد البشرية</option>
-                  <option value="project">المشروع</option>
-                  <option value="other">أخرى</option>
+                  <option value="general">General</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="development">Development</option>
+                  <option value="sales">Sales</option>
+                  <option value="hr">HR</option>
+                  <option value="project">Project</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">صورة المجموعة (اختياري)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Group Image (optional)</label>
                 <div className="flex items-center space-x-4">
                   <div className="flex-1">
                     <input
@@ -1091,7 +1091,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                         }
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      placeholder="اختر صورة للمجموعة"
+                      placeholder="Choose group image"
                     />
                   </div>
                   {imagePreview && (
@@ -1108,18 +1108,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                           setImagePreview(null);
                         }}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                        title="إزالة الصورة"
+                        title="Remove image"
                       >
                         ×
                       </button>
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">اختر صورة لتمثيل المجموعة (PNG, JPG, GIF)</p>
+                <p className="text-xs text-gray-500 mt-1">Choose an image to represent the group (PNG, JPG, GIF)</p>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المشاركون *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Participants *</label>
                 <div className="border border-gray-300 rounded-md p-2 max-h-32 overflow-y-auto">
                   {users.map((user) => (
                     <label key={user._id} className="flex items-center space-x-2 p-1 hover:bg-gray-50">
@@ -1151,7 +1151,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                   aria-label="Make group private"
                   title="Private group setting"
                 />
-                <label htmlFor="isPrivateGroup" className="ml-2 text-sm text-gray-700">جعل هذه المجموعة خاصة</label>
+                <label htmlFor="isPrivateGroup" className="ml-2 text-sm text-gray-700">Make this group private</label>
               </div>
             </div>
             
@@ -1164,14 +1164,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                إلغاء
+                Cancel
               </button>
               <button
                 onClick={handleCreateGroup}
                 disabled={!groupForm.name || groupForm.participants.length === 0}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                إنشاء مجموعة
+                Create Group
               </button>
             </div>
           </div>
@@ -1183,8 +1183,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">إضافة أعضاء إلى {selectedGroup.name}</h3>
-              <p className="text-sm text-gray-600 mt-1">اختر المستخدمين لإضافتهم إلى هذه المجموعة</p>
+              <h3 className="text-lg font-semibold text-gray-900">Add Members to {selectedGroup.name}</h3>
+              <p className="text-sm text-gray-600 mt-1">Select users to add to this group</p>
             </div>
             
             <div className="px-6 py-4">
@@ -1220,14 +1220,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                إلغاء
+                Cancel
               </button>
               <button
                 onClick={handleAddMembers}
                 disabled={addMembersForm.participants.length === 0}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                إضافة أعضاء
+                Add Members
               </button>
             </div>
           </div>
@@ -1239,35 +1239,35 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">📞 مكالمة جماعية موثقة</h3>
-              <p className="text-sm text-gray-600 mt-1">بدء مكالمة جماعية مع تسجيل تلقائي وتوثيق</p>
+              <h3 className="text-lg font-semibold text-gray-900">📞 Documented Group Call</h3>
+              <p className="text-sm text-gray-600 mt-1">Start a group call with automatic recording and documentation</p>
             </div>
             
             <div className="px-6 py-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">موضوع المكالمة *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Call Topic *</label>
                 <input
                   type="text"
                   value={callForm.title}
                   onChange={(e) => setCallForm({ ...callForm, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="أدخل موضوع المكالمة (مثال: مراجعة ميزانية الربع الثالث)"
+                  placeholder="Enter call topic (e.g., Q3 Budget Review)"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">وصف المكالمة (اختياري)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Call Description (optional)</label>
                 <textarea
                   value={callForm.description || ''}
                   onChange={(e) => setCallForm({ ...callForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
-                  placeholder="وصف مفصل للمكالمة والأهداف المرجوة"
+                  placeholder="Detailed description of the call and intended goals"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">اختر المجموعات *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select Groups *</label>
                 <div className="border border-gray-300 rounded-md p-2 max-h-40 overflow-y-auto">
                   {groups.map((group) => (
                     <label key={group._id} className="flex items-center space-x-2 p-1 hover:bg-gray-50">
@@ -1283,22 +1283,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                         }}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                       />
-                      <span className="text-sm text-gray-700">{group.name} ({group.participants?.length || 0} عضو)</span>
+                      <span className="text-sm text-gray-700">{group.name} ({group.participants?.length || 0} members)</span>
                     </label>
                   ))}
                 </div>
                 {callForm.groupIds.length > 0 && (
                   <p className="text-xs text-gray-500 mt-1">
-                    تم اختيار {callForm.groupIds.length} مجموعات - سيتم إعلام {callForm.groupIds.reduce((total, groupId) => {
+                    Selected {callForm.groupIds.length} groups - {callForm.groupIds.reduce((total, groupId) => {
                       const group = groups.find(g => g._id === groupId);
                       return total + (group?.participants?.length || 0);
-                    }, 0)} عضواً
+                    }, 0)} members will be notified
                   </p>
                 )}
               </div>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">🔧 ميزات التوثيق التلقائي:</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">🔧 Auto-Documentation Features:</h4>
                 <div className="space-y-2">
                   <label className="flex items-center">
                     <input
@@ -1307,7 +1307,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                       onChange={(e) => setCallForm({ ...callForm, enableRecording: e.target.checked })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 ml-2"
                     />
-                    <span className="text-sm text-blue-800">تسجيل المكالمة بالصوت والصورة</span>
+                    <span className="text-sm text-blue-800">Record call with audio and video</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -1316,11 +1316,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                       onChange={(e) => setCallForm({ ...callForm, enableTranscription: e.target.checked })}
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 ml-2"
                     />
-                    <span className="text-sm text-blue-800">تحويل الحوار إلى نص مكتوب (Real-time Transcription)</span>
+                    <span className="text-sm text-blue-800">Convert conversation to text (Real-time Transcription)</span>
                   </label>
                 </div>
                 <div className="mt-3 text-xs text-blue-700">
-                  💡 سيتم إنشاء ملخص تلقائي بالذكاء الاصطناعي وإرسال تقرير موثق لجميع المجموعات عند انتهاء المكالمة
+                  💡 AI-powered automatic summary will be created and documented report sent to all groups when call ends
                 </div>
               </div>
             </div>
@@ -1338,14 +1338,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                إلغاء
+                Cancel
               </button>
               <button
                 onClick={handleStartGroupCall}
                 disabled={!callForm.title || callForm.groupIds.length === 0}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                📞 بدء المكالمة الآن
+                📞 Start Call Now
               </button>
             </div>
           </div>
@@ -1357,9 +1357,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">تغيير دور المستخدم</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Change User Role</h3>
               <p className="text-sm text-gray-600 mt-1">
-                تحديث الدور لـ {selectedUser.username}
+                Update role for {selectedUser.username}
               </p>
             </div>
             
@@ -1380,7 +1380,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700">
-                      {role === 'Admin' ? 'أدمن' : role === 'Manager' ? 'مدير' : 'موظف'}
+                      {role === 'Admin' ? 'Admin' : role === 'Manager' ? 'Manager' : 'Employee'}
                     </span>
                   </label>
                 ))}
@@ -1395,13 +1395,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                إلغاء
+                Cancel
               </button>
               <button
                 onClick={() => handleRoleChange(selectedUser._id, selectedUser.role)}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
               >
-                تحديث الدور
+                Update Role
               </button>
             </div>
           </div>

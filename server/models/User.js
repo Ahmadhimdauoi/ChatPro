@@ -44,7 +44,7 @@ const UserSchema = new mongoose.Schema({
   },
   unseenMessages: [{
     chatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat' },
-    latestMessageContent: { type: String }, // لعرض محتوى الرسالة في الإشعار
+    latestMessageContent: { type: String }, // To display message content in notification
     count: { type: Number, default: 0 },
     timestamp: { type: Date, default: Date.now }
   }],

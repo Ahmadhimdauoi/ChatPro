@@ -19,6 +19,6 @@ View your app in AI Studio: https://ai.studio/apps/drive/1BqUQDH6Cr9Kms3Jt2nW0fM
 3. Run the app:
    `npm run dev`
 
-سجل الدخول ببيانات الأدمن:
-البريد الإلكتروني: ahmad2025@chatpro.com
-كلمة المرور: Admin123!@#
+Admin Login:
+Email: ahmad2025@chatpro.com
+Password: Admin123!@#

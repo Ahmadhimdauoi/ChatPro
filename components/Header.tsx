@@ -30,10 +30,10 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
 
   return (
     <>
-      <header className="bg-primary text-white p-6 shadow-md flex justify-between items-center">
+      <header className="bg-primary text-white p-3 shadow-md flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          {/* Logo Only - No Frame - Double Size */}
-          <div className="relative z-10 w-40 h-40 rounded-lg overflow-hidden flex items-center justify-center transform transition-transform duration-300 hover:scale-110 hover:rotate-3 animate-pulse">
+          {/* Logo Only - No Frame - Adjusted Size */}
+          <div className="relative z-10 w-24 h-24 rounded-lg overflow-hidden flex items-center justify-center transform transition-transform duration-300 hover:scale-110 hover:rotate-3 animate-pulse">
             <img 
               src="/Gemini_Generated_Image_cll9fhcll9fhcll9-removebg-preview.png" 
               alt="PONGO Logo" 
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
                 // Fallback if image doesn't load
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                target.parentElement!.innerHTML = '<span class="text-6xl font-bold text-primary">💬</span>';
+                target.parentElement!.innerHTML = '<span class="text-4xl font-bold text-primary">💬</span>';
               }}
             />
           </div>
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
             <button
               onClick={() => setShowProfile(true)}
               className="relative group"
-              title="الملف الشخصي"
+              title="Profile"
             >
               <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent hover:border-secondary transition-colors">
                 {currentUserState?.profilePicture ? (
@@ -73,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-primary"></div>
             </button>
             
-            <span className="text-lg">مرحباً، {currentUser.username}</span>
+            <span className="text-lg">Welcome, {currentUser.username}</span>
             
             {/* Admin Dashboard Button - Only for Admin */}
             {isAdmin && (
@@ -85,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                لوحة الأدمن
+                Admin Dashboard
               </button>
             )}
             
@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                لوحة المدير
+                Manager Dashboard
               </button>
             )}
             
@@ -109,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                موظف
+                Staff
               </div>
             )}
             
@@ -117,11 +117,11 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
               onClick={onLogout}
               className="bg-danger hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
             >
-              تسجيل الخروج
+              Logout
             </button>
           </div>
         ) : (
-          <span className="text-lg">يرجى تسجيل الدخول</span>
+          <span className="text-lg">Please login</span>
         )}
       </header>
 
@@ -131,7 +131,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
           <div className="bg-card rounded-lg shadow-xl w-full h-full max-w-7xl max-h-[95vh] overflow-hidden">
             <div className="flex justify-between items-center p-4 border-b border-border">
               <h2 className="text-xl font-semibold text-primary">
-                {isAdmin ? '🛡️ لوحة تحكم الأدمن' : '📊 لوحة تحكم المدير'}
+                {isAdmin ? '🛡️ Admin Control Panel' : '📊 Manager Control Panel'}
               </h2>
               <button
                 onClick={() => setShowAdminDashboard(false)}

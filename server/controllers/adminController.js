@@ -814,7 +814,7 @@ const startGroupCall = async (req, res) => {
         chat_id: group._id,
         sender_id: adminId,
         sender_username: admin.username,
-        content: `📞 **مكالمة جماعية موثقة**\n\n**الموضوع:** ${title.trim()}\n**المستضيف:** ${admin.username}\n**الرابط:** [انضم للمكالمة](${joinUrl})\n\n**ملاحظات:**\n• سيتم تسجيل المكالمة تلقائياً\n• سيتم تحويل الحوار إلى نص مكتوب\n• سيتم إنشاء ملخص تلقائي عند الانتهاء`,
+        content: `📞 **Documented Group Call**\n\n**Topic:** ${title.trim()}\n**Host:** ${admin.username}\n**Link:** [Join Call](${joinUrl})\n\n**Notes:**\n• Call will be recorded automatically\n• Conversation will be converted to text\n• Automatic summary will be created when ended`,
         messageType: 'system',
         priority: 'urgent',
         is_read: false,
@@ -936,7 +936,7 @@ const endGroupCall = async (req, res) => {
     };
 
     // Create documentation message for groups that participated
-    const documentationMessage = `📋 **تقرير المكالمة الموثقة**\n\n**الموضوع:** ${mockCallSession.title}\n**المدة:** ${Math.floor(duration / 60)} دقيقة ${duration % 60} ثانية\n\n**الملخص التلقائي:**\n${documentation.aiSummary}\n\n**القرارات الرئيسية:**\n${documentation.keyDecisions.map(d => `• ${d}`).join('\n')}\n\n**الإجراءات المطلوبة:**\n${documentation.actionItems.map(a => `• ${a}`).join('\n')}\n\n**التسجيل:** [مشاهدة التسجيل](${documentation.recordingUrl})`;
+    const documentationMessage = `📋 **Documented Call Report**\n\n**Topic:** ${mockCallSession.title}\n**Duration:** ${Math.floor(duration / 60)} minutes ${duration % 60} seconds\n\n**Automatic Summary:**\n${documentation.aiSummary}\n\n**Key Decisions:**\n${documentation.keyDecisions.map(d => `• ${d}`).join('\n')}\n\n**Required Actions:**\n${documentation.actionItems.map(a => `• ${a}`).join('\n')}\n\n**Recording:** [View Recording](${documentation.recordingUrl})`;
 
     // Send documentation to participating groups
     // In production, you would get the actual group IDs from the call session
