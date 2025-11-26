@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, on
 
   return (
     <>
-      <header className="bg-primary text-white p-2 shadow-md flex justify-between items-center">
+      <header className="bg-primary text-white p-6 shadow-md flex justify-between items-center">
         <div className="flex items-center space-x-3">
           {/* Logo Only - No Frame - Double Size */}
           <div className="relative z-10 w-40 h-40 rounded-lg overflow-hidden flex items-center justify-center transform transition-transform duration-300 hover:scale-110 hover:rotate-3 animate-pulse">
