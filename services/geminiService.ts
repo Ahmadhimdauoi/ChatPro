@@ -118,7 +118,7 @@ export const generateGeminiContent = async (
       model: 'gemini-1.5-flash',
       history: chatHistory,
       config: {
-        systemInstruction: "You are a helpful, professional AI assistant integrated into the ChatPro corporate messaging system. Keep responses concise, polite, and relevant to a workplace context.",
+        systemInstruction: "You are a helpful, professional AI assistant integrated into the PONGO corporate messaging system. Keep responses concise, polite, and relevant to a workplace context.",
       }
     });
 

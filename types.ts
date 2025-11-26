@@ -10,7 +10,7 @@ export enum MessageRole {
 }
 
 /**
- * Represents a user in the ChatPro system.
+ * Represents a user in the Pongo system.
  * Mirrors the User schema from the backend.
  */
 export interface User {
@@ -20,6 +20,8 @@ export interface User {
   department: string;
   status: 'active' | 'inactive' | 'offline' | 'online'; // Example statuses
   role: 'Admin' | 'Manager' | 'Employee'; // Enhanced user role system
+  profilePicture?: string; // URL to profile picture
+  createdAt?: string; // Account creation date
   permissions: {
     canDeleteUsers: boolean;
     canManageGroups: boolean;
@@ -46,13 +48,14 @@ export interface ChatParticipant {
   _id: string;
   username: string;
   status: 'active' | 'inactive' | 'offline' | 'online';
+  profilePicture?: string; // URL to profile picture
   // email and department are included if needed for display in chat list/directory
   email?: string; 
   department?: string;
 }
 
 /**
- * Represents a chat conversation in the ChatPro system.
+ * Represents a chat conversation in the Pongo system.
  * Mirrors the Chat schema from the backend.
  */
 export interface Chat {

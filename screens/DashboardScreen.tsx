@@ -18,10 +18,16 @@ interface DashboardScreenProps {
   setNotifications: React.Dispatch<React.SetStateAction<UnseenMessage[]>>;
 }
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout, notifications, setNotifications }) => {
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser: initialUser, onLogout, notifications, setNotifications }) => {
+  const [currentUser, setCurrentUser] = useState<User>(initialUser);
   const [chats, setChats] = useState<Chat[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+
+  // Update state when prop changes
+  useEffect(() => {
+    setCurrentUser(initialUser);
+  }, [initialUser]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [aiMessages, setAiMessages] = useState<ChatMessage[]>([]);
   const [loadingChats, setLoadingChats] = useState(true);
@@ -392,9 +398,18 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
     }
   };
 
+  const handleUserUpdate = (updatedUser: User) => {
+    setCurrentUser(updatedUser);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background">
-      <Header currentUser={currentUser} onLogout={onLogout} onSelectChat={handleSelectChat} />
+      <Header 
+        currentUser={currentUser} 
+        onLogout={onLogout} 
+        onSelectChat={handleSelectChat}
+        onUserUpdate={handleUserUpdate}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <ChatListEnhanced

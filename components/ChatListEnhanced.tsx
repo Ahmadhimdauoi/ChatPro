@@ -44,9 +44,33 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
             : 'hover:bg-accent-dark border-l-4 border-transparent'
         }`}
       >
-        {/* Chat icon */}
-        <div className="w-10 h-10 bg-gradient-to-br from-secondary to-primary rounded-full flex items-center justify-center text-white font-semibold mr-3">
-          {icon}
+        {/* Chat icon with profile picture */}
+        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
+          {chat.type === 'private' && chat.participants.length === 2 ? (
+            // Private chat - show other user's profile picture
+            (() => {
+              const otherUser = chat.participants.find(p => p._id !== currentUserId);
+              const profilePicture = otherUser?.profilePicture;
+              const displayName = otherUser?.username || 'Unknown';
+              
+              return profilePicture ? (
+                <img 
+                  src={profilePicture} 
+                  alt={displayName} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-secondary to-primary rounded-full flex items-center justify-center text-white font-semibold">
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              );
+            })()
+          ) : (
+            // Group chat - show group icon
+            <div className="w-full h-full bg-gradient-to-br from-secondary to-primary rounded-full flex items-center justify-center text-white font-semibold">
+              {icon}
+            </div>
+          )}
         </div>
 
         {/* Chat info */}

@@ -2,26 +2,77 @@ import React, { useState } from 'react';
 import { APP_TITLE } from '../constants';
 import { User } from '../types';
 import AdminDashboard from './AdminDashboard';
+import ProfileScreen from '../screens/ProfileScreen';
 
 interface HeaderProps {
   currentUser: User | null;
   onLogout: () => void;
   onSelectChat?: (chatId: string) => void;
+  onUserUpdate?: (updatedUser: User) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat }) => {
+const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat, onUserUpdate }) => {
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [currentUserState, setCurrentUserState] = useState<User | null>(currentUser);
 
-  const isAdmin = currentUser?.role === 'Admin';
-  const isManager = currentUser?.role === 'Manager';
-  const isStaff = currentUser?.role === 'Employee';
+  const handleProfileUpdate = (updatedUser: User) => {
+    setCurrentUserState(updatedUser);
+    // Also notify parent component if callback is provided
+    if (onUserUpdate) {
+      onUserUpdate(updatedUser);
+    }
+  };
+
+  const isAdmin = currentUserState?.role === 'Admin';
+  const isManager = currentUserState?.role === 'Manager';
+  const isStaff = currentUserState?.role === 'Employee';
 
   return (
     <>
-      <header className="bg-primary text-white p-4 shadow-md flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{APP_TITLE}</h1>
+      <header className="bg-primary text-white p-2 shadow-md flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          {/* Logo Only - No Frame - Double Size */}
+          <div className="relative z-10 w-40 h-40 rounded-lg overflow-hidden flex items-center justify-center transform transition-transform duration-300 hover:scale-110 hover:rotate-3 animate-pulse">
+            <img 
+              src="/Gemini_Generated_Image_cll9fhcll9fhcll9-removebg-preview.png" 
+              alt="PONGO Logo" 
+              className="w-full h-full object-contain animate-bounce"
+                              onError={(e) => {
+                // Fallback if image doesn't load
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.parentElement!.innerHTML = '<span class="text-6xl font-bold text-primary">💬</span>';
+              }}
+            />
+          </div>
+                  </div>
         {currentUser ? (
           <div className="flex items-center space-x-4">
+            {/* Profile Picture Button */}
+            <button
+              onClick={() => setShowProfile(true)}
+              className="relative group"
+              title="الملف الشخصي"
+            >
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-accent hover:border-secondary transition-colors">
+                {currentUserState?.profilePicture ? (
+                  <img 
+                    src={currentUserState.profilePicture} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center">
+                    <span className="text-lg font-bold text-secondary">
+                      {currentUser.username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-primary"></div>
+            </button>
+            
             <span className="text-lg">مرحباً، {currentUser.username}</span>
             
             {/* Admin Dashboard Button - Only for Admin */}
@@ -99,6 +150,15 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat }) 
             </div>
           </div>
         </div>
+      )}
+
+      {/* Profile Modal */}
+      {showProfile && currentUser && (
+        <ProfileScreen 
+          currentUser={currentUserState || currentUser}
+          onClose={() => setShowProfile(false)}
+          onProfileUpdate={handleProfileUpdate}
+        />
       )}
     </>
   );

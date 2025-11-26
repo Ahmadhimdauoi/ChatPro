@@ -1,4 +1,4 @@
-export const APP_TITLE = 'ChatPro';
+export const APP_TITLE = 'PONGO';
 
 // Backend API URL (replace with your actual backend URL)
 export const API_BASE_URL = 'http://localhost:5000/api';

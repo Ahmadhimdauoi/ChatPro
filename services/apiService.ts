@@ -444,3 +444,51 @@ export const chatService = {
     return apiRequest<UnseenMessage[]>('/notifications/unseen', 'GET', undefined, true);
   },
 };
+
+/**
+ * Upload profile picture for a user
+ * @param file The image file to upload
+ * @param userId The user ID (optional, defaults to current user)
+ * @returns Promise with the uploaded image URL
+ */
+export const uploadProfilePicture = async (
+  file: File,
+  userId?: string
+): Promise<{ profilePictureUrl: string }> => {
+  const formData = new FormData();
+  formData.append('profilePicture', file);
+  
+  const token = localStorage.getItem('jwtToken');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/users/profile-picture${userId ? `/${userId}` : ''}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Get current user profile data
+ * @returns Promise with user profile information
+ */
+export const getUserProfile = async (): Promise<User> => {
+  return apiRequest<User>('/api/users/profile', 'GET', undefined, true)
+    .then(response => {
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to get user profile');
+    });
+};

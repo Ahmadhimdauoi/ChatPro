@@ -241,47 +241,104 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
           </div>
         )}
 
-        {localMessages.map((message) => {
+        {localMessages.map((message, index) => {
           const isCurrentUser = message.sender_id === currentUserId;
           const messageClass = isCurrentUser
-            ? 'bg-secondary text-white self-end ml-auto rounded-l-2xl rounded-br-2xl'
-            : 'bg-card text-primary self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-border shadow-sm';
+            ? 'bg-gradient-to-br from-secondary to-secondary-dark text-white self-end ml-auto rounded-l-2xl rounded-br-2xl shadow-lg'
+            : 'bg-white text-primary self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-border shadow-md';
 
           const roleColor = isCurrentUser
             ? 'text-accent'
             : 'text-secondary font-medium';
 
+          // Check if this is a new day or first message
+          const shouldShowDate = index === 0 || 
+            new Date(message.timestamp).toDateString() !== 
+            new Date(localMessages[index - 1].timestamp).toDateString();
+
           return (
-            <div
-              key={message._id}
-              className={`flex flex-col max-w-[75%] p-3 ${messageClass}`}
-              aria-live="polite"
-            >
-              {!isCurrentUser && (
-                <div className={`text-xs font-semibold mb-1 ${roleColor}`}>
-                  {message.sender_username}
-                </div>
-              )}
-              
-              {/* Message content */}
-              {message.content && (
-                <div className="text-sm leading-relaxed break-words">
-                  {message.content}
-                </div>
-              )}
-
-              {/* File attachment */}
-              {message.fileAttachment && 
-               message.fileAttachment.url && 
-               message.fileAttachment.originalName && 
-               Object.keys(message.fileAttachment).length > 0 && (
-                <div className="mt-2">
-                  {renderFileAttachment(message.fileAttachment, isCurrentUser)}
+            <div key={message._id} className="space-y-1">
+              {/* Date Separator */}
+              {shouldShowDate && (
+                <div className="flex items-center justify-center my-4">
+                  <div className="bg-accent px-3 py-1 rounded-full">
+                    <span className="text-xs text-textSecondary font-medium">
+                      {new Date(message.timestamp).toLocaleDateString('ar-SA', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
                 </div>
               )}
 
-              <div className={`text-xs mt-2 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'} self-end`}>
-                {formatTimestamp(message.timestamp)}
+              <div
+                className={`flex items-end space-x-3 max-w-[85%] ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}
+                aria-live="polite"
+              >
+                {/* Profile picture for other users */}
+                {!isCurrentUser && (
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mb-1 ring-2 ring-accent ring-offset-2 ring-offset-background">
+                    <div className="w-full h-full bg-gradient-to-br from-accent to-accent-dark flex items-center justify-center">
+                      <span className="text-sm font-bold text-secondary">
+                        {message.sender_username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Message Container */}
+                <div className={`flex flex-col ${messageClass} min-w-[120px]`}>
+                  {/* Sender name for other users */}
+                  {!isCurrentUser && (
+                    <div className={`text-xs font-bold mb-2 px-1 ${roleColor} flex items-center`}>
+                      <span className="w-2 h-2 bg-success rounded-full mr-2"></span>
+                      {message.sender_username}
+                    </div>
+                  )}
+                  
+                  {/* Message content with better typography */}
+                  {message.content && (
+                    <div className="text-sm leading-relaxed break-words px-4 py-2">
+                      <div className="whitespace-pre-wrap">{message.content}</div>
+                    </div>
+                  )}
+
+                  {/* File attachment */}
+                  {message.fileAttachment && 
+                   message.fileAttachment.url && 
+                   message.fileAttachment.originalName && 
+                   Object.keys(message.fileAttachment).length > 0 && (
+                    <div className="mt-2 px-4 pb-2">
+                      {renderFileAttachment(message.fileAttachment, isCurrentUser)}
+                    </div>
+                  )}
+
+                  {/* Message timestamp with better styling */}
+                  <div className={`text-xs mt-2 px-4 pb-2 ${isCurrentUser ? 'text-blue-100' : 'text-textSecondary'} self-end flex items-center`}>
+                    <span className="opacity-75">
+                      {formatTimestamp(message.timestamp)}
+                    </span>
+                    {isCurrentUser && (
+                      <span className="ml-2">
+                        {message.is_read ? '✓✓' : '✓'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Current user avatar (smaller, on the right) */}
+                {isCurrentUser && (
+                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mb-1 ring-2 ring-secondary ring-offset-2 ring-offset-background">
+                    <div className="w-full h-full bg-gradient-to-br from-secondary to-secondary-dark flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">
+                        {message.sender_username.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           );

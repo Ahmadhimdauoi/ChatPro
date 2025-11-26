@@ -127,9 +127,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         </div>
       )}
 
-      {localMessages.map((message) => {
+      {localMessages.map((message, index) => {
         const isCurrentUser = message.sender_id === currentUserId;
         const isCallMessage = message.content.includes('📞 **🎯 Premium Group Call Session** 🎯');
+        
+        // Check if this is a new day or first message
+        const shouldShowDate = index === 0 || 
+          new Date(message.timestamp).toDateString() !== 
+          new Date(localMessages[index - 1].timestamp).toDateString();
         
         // Special styling for call messages - always use the enhanced design
         if (isCallMessage) {
@@ -245,31 +250,86 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           );
         }
 
-        // Regular message styling
+        // Regular message styling with enhanced design
         const messageClass = isCurrentUser
-          ? 'bg-blue-600 text-white self-end ml-auto rounded-l-2xl rounded-br-2xl'
-          : 'bg-white text-gray-800 self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-gray-200 shadow-sm';
+          ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white self-end ml-auto rounded-l-2xl rounded-br-2xl shadow-lg'
+          : 'bg-white text-gray-800 self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-gray-200 shadow-md';
 
         const roleColor = isCurrentUser
           ? 'text-blue-100'
           : 'text-blue-600 font-medium';
 
         return (
-          <div
-            key={message._id}
-            className={`flex flex-col max-w-[75%] p-3 ${messageClass}`}
-            aria-live="polite"
-          >
-            {!isCurrentUser && (
-              <div className={`text-xs font-semibold mb-1 ${roleColor}`}>
-                {message.sender_username}
+          <div key={message._id} className="space-y-1">
+            {/* Date Separator */}
+            {shouldShowDate && (
+              <div className="flex items-center justify-center my-4">
+                <div className="bg-gray-100 px-3 py-1 rounded-full">
+                  <span className="text-xs text-gray-600 font-medium">
+                    {new Date(message.timestamp).toLocaleDateString('ar-SA', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
               </div>
             )}
-            <div className="text-sm leading-relaxed break-words">
-              <div className="whitespace-pre-wrap">{message.content}</div>
-            </div>
-            <div className={`text-xs mt-2 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'} self-end`}>
-              {formatTimestamp(message.timestamp)}
+
+            <div
+              className={`flex items-end space-x-3 max-w-[85%] ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : 'flex-row'}`}
+              aria-live="polite"
+            >
+              {/* Profile picture for other users */}
+              {!isCurrentUser && (
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 mb-1 ring-2 ring-gray-200 ring-offset-2 ring-offset-white">
+                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <span className="text-sm font-bold text-gray-600">
+                      {message.sender_username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              {/* Message Container */}
+              <div className={`flex flex-col ${messageClass} min-w-[120px]`}>
+                {/* Sender name for other users */}
+                {!isCurrentUser && (
+                  <div className={`text-xs font-bold mb-2 px-1 ${roleColor} flex items-center`}>
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    {message.sender_username}
+                  </div>
+                )}
+                
+                {/* Message content with better typography */}
+                <div className="text-sm leading-relaxed break-words px-4 py-2">
+                  <div className="whitespace-pre-wrap">{message.content}</div>
+                </div>
+                
+                {/* Message timestamp with better styling */}
+                <div className={`text-xs mt-2 px-4 pb-2 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'} self-end flex items-center`}>
+                  <span className="opacity-75">
+                    {formatTimestamp(message.timestamp)}
+                  </span>
+                  {isCurrentUser && (
+                    <span className="ml-2">
+                      {message.is_read ? '✓✓' : '✓'}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Current user avatar (smaller, on the right) */}
+              {isCurrentUser && (
+                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 mb-1 ring-2 ring-blue-500 ring-offset-2 ring-offset-white">
+                  <div className="w-full h-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">
+                      {message.sender_username.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
