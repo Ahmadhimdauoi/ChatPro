@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChatMessage, MessageRole } from '../types';
+import { ChatMessage, MessageRole, FileAttachment } from '../types';
 import { socketService } from '../services/socketService';
+import { summaryService } from '../services/apiService';
+import SummaryModal from './SummaryModal';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
   loading: boolean;
   currentUserId: string;
+  chatId?: string;
   onMessagesUpdate?: (messages: ChatMessage[]) => void;
 }
 
@@ -13,6 +16,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   messages, 
   loading, 
   currentUserId, 
+  chatId,
   onMessagesUpdate 
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Message = require('../models/Message');
 const User = require('../models/User'); // Required for user status updates
+const Chat = require('../models/Chat'); // Required for chat participants
 
 require('dotenv').config();
 
@@ -62,20 +63,39 @@ const initSocketIO = (socketIoInstance) => {
 
     socket.on('sendMessage', async (messageData) => {
       try {
-        const { chat_id, content } = messageData;
+        const { chat_id, content, fileAttachment, mentions } = messageData;
         const sender_id = socket.userId; // Get sender from authenticated socket
         const sender_username = socket.username;
 
-        if (!chat_id || !content || !sender_id) {
+        if (!chat_id || (!content && !fileAttachment) || !sender_id) {
           return socket.emit('sendMessageError', { message: 'Invalid message data' });
+        }
+
+        // Parse mentions from content if not provided
+        let parsedMentions = mentions || [];
+        if (!parsedMentions && content) {
+          const mentionPattern = /@(\w+)/g;
+          const matches = content.match(mentionPattern);
+          if (matches) {
+            const usernames = [...new Set(matches.map(match => match.substring(1)))];
+            
+            // Find users by usernames in the chat
+            const chat = await Chat.findById(chat_id).populate('participants');
+            if (chat) {
+              parsedMentions = chat.participants
+                .filter(participant => usernames.includes(participant.username))
+                .map(participant => participant._id);
+            }
+          }
         }
 
         // Save message to DB
         const newMessage = new Message({
           chat_id,
           sender_id,
-          content,
-          timestamp: new Date(), // Mongoose will handle this to ISODate
+          content: content || '', // Allow empty content if file is present
+          fileAttachment: fileAttachment || undefined,
+          mentions: parsedMentions
         });
         await newMessage.save();
 
@@ -86,9 +106,57 @@ const initSocketIO = (socketIoInstance) => {
           sender_id: newMessage.sender_id.toString(), // Convert ObjectId to string
           sender_username: sender_username, // Use username from socket
           content: newMessage.content,
+          fileAttachment: newMessage.fileAttachment,
+          mentions: newMessage.mentions,
           timestamp: newMessage.timestamp.toISOString(),
           is_read: newMessage.is_read,
         };
+
+        // Get chat participants to send notifications
+        const chat = await Chat.findById(chat_id).populate('participants');
+        
+        if (chat && chat.participants) {
+          // Get all participants except the sender
+          const recipients = chat.participants.filter(p => p._id.toString() !== sender_id);
+          
+          // Send notifications to all recipients (except sender)
+          for (const recipient of recipients) {
+            // Find recipient's socket (if connected)
+            const recipientSocket = Array.from(io.sockets.sockets.values())
+              .find(s => s.userId === recipient._id.toString());
+            
+            // Update recipient's unseen messages in database
+            // Use findOneAndUpdate to avoid conflicts
+            const recipientUser = await User.findById(recipient._id);
+            if (recipientUser) {
+              // Remove existing entry for this chat if exists
+              recipientUser.unseenMessages = recipientUser.unseenMessages.filter(
+                msg => msg.chatId.toString() !== chat_id.toString()
+              );
+              
+              // Add new entry
+              recipientUser.unseenMessages.push({
+                chatId: chat_id,
+                latestMessageContent: content,
+                count: 1,
+                timestamp: new Date()
+              });
+              
+              await recipientUser.save();
+            }
+            
+            // If recipient is connected, send notification
+            if (recipientSocket) {
+              recipientSocket.emit('notificationReceived', {
+                chatId: chat_id,
+                message: populatedMessage,
+                senderUsername: sender_username,
+                timestamp: new Date()
+              });
+              console.log(`Notification sent to user ${recipient._id} for chat ${chat_id}`);
+            }
+          }
+        }
 
         // Emit message to all participants in the specific chat room
         // `io.to(chat_id)` will send to everyone in that room

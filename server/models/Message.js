@@ -13,7 +13,10 @@ const MessageSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: [true, 'Message content cannot be empty'],
+    required: function() {
+      // Content is required unless there's a file attachment
+      return !this.fileAttachment;
+    },
     trim: true,
   },
   timestamp: {
@@ -24,6 +27,31 @@ const MessageSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // Enhanced file attachment fields
+  fileAttachment: {
+    url: { type: String, required: false },
+    filename: { type: String, required: false },
+    originalName: { type: String, required: false },
+    mimeType: { type: String, required: false },
+    size: { type: Number, required: false },
+    uploadedAt: { type: Date, default: Date.now }
+  },
+  // Mentions support
+  mentions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  // Message priority and type
+  priority: {
+    type: String,
+    enum: ['normal', 'urgent', 'important'],
+    default: 'normal'
+  },
+  messageType: {
+    type: String,
+    enum: ['text', 'file', 'system', 'announcement'],
+    default: 'text'
+  }
 }, {
   timestamps: true, // Adds createdAt and updatedAt
 });

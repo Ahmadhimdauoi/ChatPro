@@ -54,6 +54,7 @@ const register = async (req, res) => {
           department: user.department,
           status: user.status,
           role: user.role, // Add role field
+          permissions: user.permissions, // Add permissions field
         },
         token,
       },
@@ -99,6 +100,7 @@ const login = async (req, res) => {
           department: user.department,
           status: user.status,
           role: user.role, // Add role field
+          permissions: user.permissions, // Add permissions field
         },
         token,
       },

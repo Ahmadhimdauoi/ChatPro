@@ -1,7 +1,7 @@
 const express = require('express');
 const { createChat, getUserChats, getChatMessages } = require('../controllers/chatController');
 const { protect } = require('../middlewares/authMiddleware');
-const checkAdminRole = require('../middlewares/adminMiddleware');
+const { checkAdminRole } = require('../middlewares/adminMiddleware');
 
 const router = express.Router();
 

@@ -50,4 +50,97 @@ const checkAdminRole = async (req, res, next) => {
   }
 };
 
-module.exports = checkAdminRole;
+/**
+ * Middleware to check if user has specific permission
+ * @param {string} permission - The permission to check (e.g., 'canGenerateSummaries')
+ */
+const checkPermission = (permission) => {
+  return async (req, res, next) => {
+    try {
+      const userId = req.userId;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Check if user has the required permission
+      if (!user.permissions[permission]) {
+        console.log(`❌ Permission check - User lacks permission: ${permission}`);
+        return res.status(403).json({
+          success: false,
+          message: `Access denied. Required permission: ${permission}`
+        });
+      }
+
+      console.log(`✅ Permission check - User has permission: ${permission}`);
+      next();
+    } catch (error) {
+      console.error('Permission middleware error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Server error while checking permissions'
+      });
+    }
+  };
+};
+
+/**
+ * Middleware to check if user can manage groups (Admin or Manager)
+ */
+const checkGroupManagement = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Allow Admin and Manager to manage groups
+    if (user.role !== 'Admin' && user.role !== 'Manager') {
+      console.log('❌ Group management - User is not Admin or Manager:', user.role);
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin or Manager role required'
+      });
+    }
+
+    console.log('✅ Group management - User can manage groups');
+    next();
+  } catch (error) {
+    console.error('Group management middleware error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while checking group management permissions'
+    });
+  }
+};
+
+module.exports = {
+  checkAdminRole,
+  checkPermission,
+  checkGroupManagement
+};

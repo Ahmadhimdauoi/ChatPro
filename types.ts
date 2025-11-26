@@ -19,8 +19,26 @@ export interface User {
   email: string;
   department: string;
   status: 'active' | 'inactive' | 'offline' | 'online'; // Example statuses
-  role: 'Admin' | 'Employee'; // User role for permissions
+  role: 'Admin' | 'Manager' | 'Employee'; // Enhanced user role system
+  permissions: {
+    canDeleteUsers: boolean;
+    canManageGroups: boolean;
+    canViewAnalytics: boolean;
+    canGenerateSummaries: boolean;
+    canManageChannels: boolean;
+  };
+  unseenMessages: UnseenMessage[]; // Array of unseen messages
   // Removed isOnline as status from backend is sufficient
+}
+
+/**
+ * Represents an unseen message notification.
+ */
+export interface UnseenMessage {
+  chatId: string;
+  latestMessageContent: string;
+  count: number;
+  timestamp: string;
 }
 
 // Minimal User for populated chat participants
@@ -46,6 +64,24 @@ export interface Chat {
   createdAt: string; // ISO Date string
   lastMessage?: ChatMessage; // Optional: last message for chat list preview
   unreadCount?: number; // Optional: number of unread messages
+  // New fields for enhanced features
+  description?: string;
+  isPrivate?: boolean;
+  pinnedMessageId?: string | null;
+  category?: 'general' | 'marketing' | 'development' | 'sales' | 'hr' | 'project' | 'other';
+  tags?: string[];
+}
+
+/**
+ * Represents a file attachment in a chat message.
+ */
+export interface FileAttachment {
+  fileName: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  uploadedAt: string;
 }
 
 /**
@@ -59,6 +95,10 @@ export interface ChatMessage {
   sender_id: string; // Reference to User _id
   sender_username: string; // Added for display in UI (populated from backend)
   content: string;
+  fileAttachment?: FileAttachment; // Optional file attachment
+  mentions?: string[]; // Array of mentioned user IDs
+  priority?: 'normal' | 'urgent' | 'important'; // Message priority
+  messageType?: 'text' | 'file' | 'system' | 'announcement'; // Message type
   timestamp: string; // ISO Date string
   is_read: boolean;
   role: MessageRole; // Client-side specific for display
@@ -81,4 +121,44 @@ export interface ApiResponse<T = any> {
   message: string;
   data?: T;
   token?: string; // For login/register responses
+}
+
+// Admin-specific interfaces
+export interface GroupCreationRequest {
+  name: string;
+  description?: string;
+  participants: string[];
+  category?: 'general' | 'marketing' | 'development' | 'sales' | 'hr' | 'project' | 'other';
+  tags?: string[];
+  isPrivate?: boolean;
+}
+
+export interface AddMembersRequest {
+  participants: string[];
+}
+
+export interface AnnouncementRequest {
+  message: string;
+  groupIds: string[];
+  priority?: 'normal' | 'urgent' | 'important';
+  messageType?: 'text' | 'file' | 'system' | 'announcement';
+}
+
+export interface AdminGroup extends Chat {
+  participantDetails?: ChatParticipant[];
+  groupAdminDetails?: ChatParticipant;
+}
+
+export interface AnnouncementResult {
+  chatId: string;
+  chatName: string;
+  messageId: string;
+}
+
+export interface AnnouncementResponse {
+  announcement: string;
+  publishedTo: AnnouncementResult[];
+  totalRecipients: number;
+  sender: string;
+  priority: 'normal' | 'urgent' | 'important';
 }

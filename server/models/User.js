@@ -32,9 +32,22 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Admin', 'Employee'],
+    enum: ['Admin', 'Manager', 'Employee'],
     default: 'Employee',
   },
+  permissions: {
+    canDeleteUsers: { type: Boolean, default: false },
+    canManageGroups: { type: Boolean, default: false },
+    canViewAnalytics: { type: Boolean, default: false },
+    canGenerateSummaries: { type: Boolean, default: false },
+    canManageChannels: { type: Boolean, default: false },
+  },
+  unseenMessages: [{
+    chatId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chat' },
+    latestMessageContent: { type: String }, // لعرض محتوى الرسالة في الإشعار
+    count: { type: Number, default: 0 },
+    timestamp: { type: Date, default: Date.now }
+  }],
 }, {
   timestamps: true, // Adds createdAt and updatedAt timestamps
 });
@@ -46,6 +59,34 @@ UserSchema.pre('save', async function (next) {
   }
   const salt = await bcrypt.genSalt(10);
   this.password_hash = await bcrypt.hash(this.password_hash, salt);
+  
+  // Set permissions based on role
+  if (this.role === 'Admin') {
+    this.permissions = {
+      canDeleteUsers: true,
+      canManageGroups: true,
+      canViewAnalytics: true,
+      canGenerateSummaries: true,
+      canManageChannels: true,
+    };
+  } else if (this.role === 'Manager') {
+    this.permissions = {
+      canDeleteUsers: false,
+      canManageGroups: true,
+      canViewAnalytics: true,
+      canGenerateSummaries: true,
+      canManageChannels: true,
+    };
+  } else {
+    this.permissions = {
+      canDeleteUsers: false,
+      canManageGroups: false,
+      canViewAnalytics: false,
+      canGenerateSummaries: false,
+      canManageChannels: false,
+    };
+  }
+  
   next();
 });
 

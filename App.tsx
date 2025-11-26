@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, JwtPayload } from './types';
+import { User, JwtPayload, UnseenMessage } from './types';
 import { authService } from './services/apiService';
 import { socketService } from './services/socketService';
 import LoginScreen from './screens/LoginScreen';
@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showRegisterScreen, setShowRegisterScreen] = useState(false);
   const [isConnectingSocket, setIsConnectingSocket] = useState(false);
+  const [notifications, setNotifications] = useState<UnseenMessage[]>([]);
 
   // Effect to check for existing token on initial load
   useEffect(() => {
@@ -35,6 +36,14 @@ const App: React.FC = () => {
             department: 'Unknown', // Placeholder, would come from actual user data
             status: 'online', // Placeholder
             role: 'Employee', // Default role - will be updated on full login
+            permissions: {
+              canDeleteUsers: false,
+              canManageGroups: false,
+              canViewAnalytics: false,
+              canGenerateSummaries: false,
+              canManageChannels: false,
+            },
+            unseenMessages: [], // Initialize with empty array
           };
           setJwtToken(token);
           setCurrentUser(dummyUser);
@@ -112,7 +121,21 @@ const App: React.FC = () => {
     setAuthLoading(true);
     setAuthError(null);
     try {
-      const response = await authService.register({ username, email, password, department });
+      const response = await authService.register({ 
+        username, 
+        email, 
+        password, 
+        department,
+        role: 'Employee', // Default role for new users
+        permissions: {
+          canDeleteUsers: false,
+          canManageGroups: false,
+          canViewAnalytics: false,
+          canGenerateSummaries: false,
+          canManageChannels: false,
+        },
+        unseenMessages: [] // Initialize with empty array
+      });
       if (response.success && response.data?.token && response.data?.user) {
         localStorage.setItem('jwtToken', response.data.token);
         setJwtToken(response.data.token);
@@ -173,6 +196,8 @@ const App: React.FC = () => {
     <DashboardScreen
       currentUser={currentUser}
       onLogout={handleLogout}
+      notifications={notifications}
+      setNotifications={setNotifications}
     />
   );
 };

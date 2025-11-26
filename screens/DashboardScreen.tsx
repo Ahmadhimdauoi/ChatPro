@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from '../components/Header';
-import ChatList from '../components/ChatList';
-import ChatWindow from '../components/ChatWindow';
+import ChatListEnhanced from '../components/ChatListEnhanced';
+import ChatWindowEnhanced from '../components/ChatWindowEnhanced';
 import MessageInput from '../components/MessageInput';
 import UserDirectoryModal from '../components/UserDirectoryModal';
 import GroupChatModal from '../components/GroupChatModal';
-import { User, Chat, ChatMessage, MessageRole } from '../types';
+import { User, Chat, ChatMessage, MessageRole, UnseenMessage, FileAttachment } from '../types';
 import { chatService, userService } from '../services/apiService';
 import { socketService } from '../services/socketService';
 import { generateGeminiContent } from '../services/geminiService';
@@ -14,9 +14,11 @@ import { v4 as uuidv4 } from 'uuid';
 interface DashboardScreenProps {
   currentUser: User;
   onLogout: () => void;
+  notifications: UnseenMessage[];
+  setNotifications: React.Dispatch<React.SetStateAction<UnseenMessage[]>>;
 }
 
-const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout }) => {
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout, notifications, setNotifications }) => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -196,24 +198,79 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
      };
      
      console.log('Setting up chat message handler');
-     socketService.setOnChatMessage(handleChatMessage);
+     socketService.onMessageReceived(handleChatMessage);
+
+     // Set up notification listener
+     const handleNotificationReceived = (notification: {
+       chatId: string;
+       message: ChatMessage;
+       senderUsername: string;
+       timestamp: Date;
+     }) => {
+       console.log('Received notification:', notification);
+       
+       // Add to notifications state
+       setNotifications(prev => {
+         const existingNotification = prev.find(n => n.chatId === notification.chatId);
+         if (existingNotification) {
+           // Update existing notification
+           return prev.map(n => 
+             n.chatId === notification.chatId 
+               ? {
+                   ...n,
+                   latestMessageContent: notification.message.content,
+                   count: n.count + 1,
+                   timestamp: notification.timestamp.toISOString()
+                 }
+               : n
+           );
+         } else {
+           // Add new notification
+           const newNotification: UnseenMessage = {
+             chatId: notification.chatId,
+             latestMessageContent: notification.message.content,
+             count: 1,
+             timestamp: notification.timestamp.toISOString()
+           };
+           return [newNotification, ...prev];
+         }
+       });
+     };
+
+     // Set up notification listener in socket service
+     socketService.on('notificationReceived', handleNotificationReceived);
 
      return () => {
          console.log('Cleaning up chat message handler');
-         socketService.setOnChatMessage(undefined);
+         socketService.removeMessageListeners();
+         // Clean up notification listener
+         socketService.off('notificationReceived', handleNotificationReceived);
      };
-  }, [currentUser._id, currentUser.username]);
+  }, [currentUser._id, currentUser.username, setNotifications]);
 
-  const handleSelectChat = (chatId: string) => {
+  const handleSelectChat = async (chatId: string) => {
     setActiveChatId(chatId);
     activeChatIdRef.current = chatId; // Update ref immediately
+    
+    // Mark messages as read when selecting a chat (except AI chat)
+    if (chatId !== 'AI_CHAT') {
+      try {
+        await chatService.markAsRead(chatId);
+        // Remove notifications for this chat from local state
+        setNotifications(prev => prev.filter(n => n.chatId !== chatId));
+        console.log('Marked chat as read:', chatId);
+      } catch (error) {
+        console.error('Error marking chat as read:', error);
+      }
+    }
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, fileAttachment?: FileAttachment) => {
     if (!activeChatId) return;
 
     console.log('Sending message:', content);
     console.log('Active chat ID:', activeChatId);
+    console.log('File attachment:', fileAttachment);
 
     if (activeChatId === 'AI_CHAT') {
       if (isAiThinking.current) return;
@@ -274,6 +331,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
       socketService.emit('sendMessage', {
         chat_id: activeChatId,
         content: content,
+        fileAttachment: fileAttachment,
       });
     }
   };
@@ -339,23 +397,22 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
       <Header currentUser={currentUser} onLogout={onLogout} />
 
       <div className="flex flex-1 overflow-hidden">
-        <ChatList
+        <ChatListEnhanced
           chats={chats}
-          activeChatId={activeChatId}
-          currentUser={currentUser}
-          onSelectChat={handleSelectChat}
-          onOpenNewChatModal={() => setShowNewChatModal(true)}
-          onOpenGroupChatModal={() => setShowGroupChatModal(true)}
+          selectedChatId={activeChatId}
+          currentUserId={currentUser._id}
+          onChatSelect={handleSelectChat}
         />
 
         <main className="flex-1 flex flex-col bg-white">
           {activeChatId ? (
             <>
               <div className="flex-1 overflow-hidden relative flex flex-col">
-                <ChatWindow
+                <ChatWindowEnhanced
                   messages={activeChatId === 'AI_CHAT' ? aiMessages : messages}
                   loading={loadingMessages && activeChatId !== 'AI_CHAT'}
                   currentUserId={currentUser._id}
+                  chatId={activeChatId === 'AI_CHAT' ? undefined : activeChatId}
                 />
               </div>
               <MessageInput

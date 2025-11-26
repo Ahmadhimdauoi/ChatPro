@@ -1,16 +1,17 @@
 import React from 'react';
-import { Chat, User, ChatParticipant } from '../types';
+import { Chat, User, ChatParticipant, UnseenMessage } from '../types';
 
 interface ChatListProps {
   chats: Chat[];
   activeChatId: string | null;
   currentUser: User;
+  notifications: UnseenMessage[];
   onSelectChat: (chatId: string) => void;
   onOpenNewChatModal: () => void; // For private chat creation
   onOpenGroupChatModal?: () => void; // For group chat creation (Admin only)
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, onSelectChat, onOpenNewChatModal, onOpenGroupChatModal }) => {
+const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, notifications, onSelectChat, onOpenNewChatModal, onOpenGroupChatModal }) => {
   const getChatDisplayName = (chat: Chat): string => {
     if (chat.type === 'group') {
       return chat.name || 'Group Chat';
@@ -21,6 +22,11 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, o
       );
       return otherParticipant ? otherParticipant.username : 'Unknown User';
     }
+  };
+
+  const getUnreadCount = (chatId: string): number => {
+    const notification = notifications.find(n => n.chatId === chatId);
+    return notification ? notification.count : 0;
   };
 
   return (
@@ -85,10 +91,10 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChatId, currentUser, o
                       </p>
                     )}
                   </div>
-                  {/* Display unread count if available */}
-                  {chat.unreadCount && chat.unreadCount > 0 && (
-                    <span className="ml-2 px-2 py-1 bg-accent text-white text-xs font-bold rounded-full">
-                      {chat.unreadCount}
+                  {/* Display unread count from notifications */}
+                  {getUnreadCount(chat._id) > 0 && (
+                    <span className="ml-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {getUnreadCount(chat._id)}
                     </span>
                   )}
                 </button>

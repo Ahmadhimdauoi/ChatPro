@@ -28,11 +28,38 @@ class SocketService {
   public setOnChatMessage(handler: ((message: ChatMessage) => void) | undefined) { this.handlers.onChatMessage = handler; }
 
   /**
+   * Add event listener for custom events
+   */
+  public on(event: string, handler: (...args: any[]) => void) {
+    if (this.socket) {
+      this.socket.on(event, handler);
+    }
+  }
+
+  /**
+   * Remove event listener for custom events
+   */
+  public off(event: string, handler: (...args: any[]) => void) {
+    if (this.socket) {
+      this.socket.off(event, handler);
+    }
+  }
+
+  /**
    * Register a callback for when a chat message is received
    * @param callback The function to call when a chat message is received
    */
   public onMessageReceived(callback: (message: ChatMessage) => void) {
     this.handlers.onChatMessage = callback;
+    
+    // If socket is already connected, register the listener immediately
+    if (this.socket && this.socket.connected) {
+      // Remove existing listener to avoid duplicates
+      this.socket.off('chatMessage', this.handlers.onChatMessage);
+      // Add new listener
+      this.socket.on('chatMessage', callback);
+      console.log('[SocketService] Registered chatMessage listener on existing connection');
+    }
   }
 
   /**
@@ -48,6 +75,16 @@ class SocketService {
         this.socket.off(event);
       }
       console.log(`[SocketService] Removed listener for event: ${event}`);
+    }
+  }
+
+  /**
+   * Remove all chat message listeners
+   */
+  public removeMessageListeners() {
+    if (this.socket && this.handlers.onChatMessage) {
+      this.socket.off('chatMessage', this.handlers.onChatMessage);
+      console.log('[SocketService] Removed chatMessage listeners');
     }
   }
 

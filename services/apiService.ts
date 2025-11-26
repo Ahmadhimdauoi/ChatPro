@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants';
-import { User, ApiResponse, JwtPayload, Chat, ChatMessage, ChatParticipant } from '../types';
+import { User, ApiResponse, JwtPayload, Chat, ChatMessage, ChatParticipant, UnseenMessage, FileAttachment, GroupCreationRequest, AddMembersRequest, AnnouncementRequest, AdminGroup, AnnouncementResponse } from '../types';
 
 /**
  * Generic function for making API requests.
@@ -115,6 +115,238 @@ export const userService = {
   getUsers: async (): Promise<ApiResponse<User[]>> => {
     return apiRequest<User[]>('/users', 'GET', undefined, true);
   },
+  /**
+   * Fetches search suggestions/autocomplete
+   * @param query The search query
+   * @returns A promise that resolves to the API response, containing suggestions
+   */
+  getSearchSuggestions: async (query: string): Promise<ApiResponse<string[]>> => {
+    return apiRequest<string[]>('/search/suggestions', 'GET', undefined, true);
+  },
+};
+
+/**
+ * Service for handling admin-related API calls.
+ */
+export const adminService = {
+  /**
+   * Get all users for admin management
+   */
+  getAllUsers: async (): Promise<ApiResponse<User[]>> => {
+    return apiRequest<User[]>('/admin/users', 'GET', undefined, true);
+  },
+
+  /**
+   * Update user role
+   */
+  updateUserRole: async (userId: string, role: string): Promise<ApiResponse<{ permissions: any }>> => {
+    return apiRequest<{ permissions: any }>(`/admin/users/${userId}/role`, 'PUT', { role }, true);
+  },
+
+  /**
+   * Delete user
+   */
+  deleteUser: async (userId: string): Promise<ApiResponse<{ deletedUsername: string }>> => {
+    return apiRequest<{ deletedUsername: string }>(`/admin/users/${userId}`, 'DELETE', undefined, true);
+  },
+
+  /**
+   * Get system analytics
+   */
+  getAnalytics: async (): Promise<ApiResponse<any>> => {
+    return apiRequest<any>('/admin/analytics', 'GET', undefined, true);
+  },
+
+  /**
+   * Remove member from group
+   */
+  removeGroupMember: async (chatId: string, userId: string): Promise<ApiResponse<any>> => {
+    return apiRequest<any>(`/admin/chats/${chatId}/members/${userId}`, 'DELETE', undefined, true);
+  },
+
+  /**
+   * Get all groups for admin management
+   */
+  getAllGroups: async (): Promise<ApiResponse<AdminGroup[]>> => {
+    return apiRequest<AdminGroup[]>('/admin/groups', 'GET', undefined, true);
+  },
+
+  /**
+   * Create new group (Admin only)
+   */
+  createGroup: async (groupData: GroupCreationRequest): Promise<ApiResponse<AdminGroup>> => {
+    return apiRequest<AdminGroup>('/admin/groups', 'POST', groupData, true);
+  },
+
+  /**
+   * Add members to existing group (Admin only)
+   */
+  addGroupMembers: async (chatId: string, membersData: AddMembersRequest): Promise<ApiResponse<any>> => {
+    return apiRequest<any>(`/admin/groups/${chatId}/members`, 'POST', membersData, true);
+  },
+
+  /**
+   * Delete group (Admin only)
+   */
+  deleteGroup: async (groupId: string): Promise<ApiResponse<any>> => {
+    return apiRequest<any>(`/admin/groups/${groupId}`, 'DELETE', undefined, true);
+  },
+
+  /**
+   * Publish announcement to multiple groups (Admin only)
+   */
+  publishAnnouncement: async (announcementData: AnnouncementRequest): Promise<ApiResponse<AnnouncementResponse>> => {
+    return apiRequest<AnnouncementResponse>('/admin/announce', 'POST', announcementData, true);
+  },
+};
+
+/**
+ * Service for handling file-related API calls.
+ */
+export const fileService = {
+  /**
+   * Upload a file to the server.
+   * @param file The file to upload.
+   * @param onProgress Optional progress callback.
+   * @returns A promise that resolves to the API response, containing file info.
+   */
+  uploadFile: async (file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<FileAttachment>> => {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+      throw new Error('Authentication token not found. Please log in again.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const xhr = new XMLHttpRequest();
+
+    // Return a promise that resolves with the response
+    return new Promise((resolve, reject) => {
+      // Track upload progress
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const progress = (event.loaded / event.total) * 100;
+            onProgress(progress);
+          }
+        });
+      }
+
+      // Handle completion
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText) as ApiResponse<FileAttachment>;
+            resolve(response);
+          } catch (error) {
+            reject(new Error('Invalid server response'));
+          }
+        } else {
+          try {
+            const errorResponse = JSON.parse(xhr.responseText) as ApiResponse;
+            reject(new Error(errorResponse.message || 'Upload failed'));
+          } catch {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        }
+      });
+
+      // Handle errors
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+
+      // Set up and send request
+      xhr.open('POST', `${API_BASE_URL}/files/upload`);
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.send(formData);
+    });
+  },
+};
+
+/**
+ * Service for handling search-related API calls.
+ */
+export const searchService = {
+  /**
+   * Search across chats, messages, and users
+   * @param query The search query
+   * @param options Optional search options
+   * @returns A promise that resolves to the API response, containing search results
+   */
+  searchContent: async (
+    query: string,
+    options: {
+      type?: 'all' | 'chats' | 'messages' | 'users';
+      limit?: number;
+      page?: number;
+    } = {}
+  ): Promise<ApiResponse<{
+    query: string;
+    results: {
+      chats: Chat[];
+      messages: ChatMessage[];
+      users: User[];
+    };
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      hasMore: boolean;
+    };
+  }>> => {
+    const params = new URLSearchParams({
+      q: query,
+      type: options.type || 'all',
+      limit: (options.limit || 20).toString(),
+      page: (options.page || 1).toString()
+    });
+
+    return apiRequest(
+      `/search?${params.toString()}`,
+      'GET',
+      undefined,
+      true
+    );
+  },
+
+  /**
+   * Get search suggestions/autocomplete
+   * @param query The search query
+   * @returns A promise that resolves to the API response, containing suggestions
+   */
+  getSearchSuggestions: async (
+    query: string
+  ): Promise<ApiResponse<{
+    suggestions: Array<{
+      type: 'chat' | 'user';
+      text: string;
+      subtitle: string;
+      id: string;
+    }>;
+  }>> => {
+    return apiRequest(
+      `/search/suggestions?q=${encodeURIComponent(query)}`,
+      'GET',
+      undefined,
+      true
+    );
+  },
+};
+
+/**
+ * Service for handling summary-related API calls.
+ */
+export const summaryService = {
+  /**
+   * Generate AI summary of a conversation
+   * @param chatId The ID of the chat to summarize
+   * @returns A promise that resolves to the API response, containing the summary
+   */
+  generateConversationSummary: async (chatId: string): Promise<ApiResponse<{ summary: string; messageCount: number; chatId: string }>> => {
+    return apiRequest<{ summary: string; messageCount: number; chatId: string }>('/chat/summarize', 'POST', { chatId }, true);
+  },
 };
 
 /**
@@ -166,5 +398,22 @@ export const chatService = {
    */
   getChatMessages: async (chatId: string): Promise<ApiResponse<ChatMessage[]>> => {
     return apiRequest<ChatMessage[]>(`/chats/${chatId}/messages`, 'GET', undefined, true);
+  },
+
+  /**
+   * Mark messages in a chat as read for the current user.
+   * @param chatId The ID of the chat to mark as read.
+   * @returns A promise that resolves to the API response.
+   */
+  markAsRead: async (chatId: string): Promise<ApiResponse<UnseenMessage[]>> => {
+    return apiRequest<UnseenMessage[]>('/notifications/markAsRead', 'POST', { chatId }, true);
+  },
+
+  /**
+   * Get all unseen messages for the current user.
+   * @returns A promise that resolves to the API response, containing an array of UnseenMessage objects.
+   */
+  getUnseenMessages: async (): Promise<ApiResponse<UnseenMessage[]>> => {
+    return apiRequest<UnseenMessage[]>('/notifications/unseen', 'GET', undefined, true);
   },
 };

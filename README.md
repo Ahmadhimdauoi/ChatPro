@@ -18,3 +18,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1BqUQDH6Cr9Kms3Jt2nW0fM
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+سجل الدخول ببيانات الأدمن:
+البريد الإلكتروني: ahmad2025@chatpro.com
+كلمة المرور: Admin123!@#
