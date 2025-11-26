@@ -116,7 +116,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   const topic = lines.find(l => l.includes('🎙️ **Topic:**'))?.split(':')[1]?.trim();
                   const host = lines.find(l => l.includes('👤 **Host:**'))?.split(':')[1]?.trim();
                   const time = lines.find(l => l.includes('⏰ **Start Time:**'))?.split(':')[1]?.trim();
-                  const linkMatch = message.content.match(/\[🎤 Join Video Call\]\((https:\/\/[^)]+)\)/);
+                  const linkMatch = message.content.match(/🔗 \*\*Join Link:\*\* (https:\/\/[^\s]+)/);
                   const joinUrl = linkMatch ? linkMatch[1] : null;
                   
                   return (
@@ -169,7 +169,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         </div>
                       </div>
                       
-                      {/* Join Button */}
+                      {/* Join Button - The URL itself */}
                       <div className="pt-3">
                         <button
                           onClick={() => {
@@ -179,12 +179,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           }}
                           className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
                         >
-                          <span className="text-lg">🎤</span>
-                          <span>Join Premium Video Call</span>
-                          <span className="text-xs opacity-75">→</span>
+                          <span className="text-sm font-mono">{joinUrl}</span>
                         </button>
                         <p className="text-xs text-center text-gray-500 mt-2 italic">
-                          🚀 High-quality video conference • Click to join instantly
+                          🚀 High-quality video conference • Click the link to join instantly
                         </p>
                       </div>
                     </div>
