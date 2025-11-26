@@ -6,9 +6,10 @@ import AdminDashboard from './AdminDashboard';
 interface HeaderProps {
   currentUser: User | null;
   onLogout: () => void;
+  onSelectChat?: (chatId: string) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ currentUser, onLogout, onSelectChat }) => {
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   const isAdmin = currentUser?.role === 'Admin';
@@ -90,7 +91,11 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
             </div>
             
             <div className="flex-1 overflow-auto">
-              <AdminDashboard currentUser={currentUser!} />
+              <AdminDashboard 
+                currentUser={currentUser!} 
+                onClose={() => setShowAdminDashboard(false)}
+                onSelectChat={onSelectChat}
+              />
             </div>
           </div>
         </div>

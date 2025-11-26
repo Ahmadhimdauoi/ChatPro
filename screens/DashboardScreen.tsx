@@ -394,7 +394,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <Header currentUser={currentUser} onLogout={onLogout} />
+      <Header currentUser={currentUser} onLogout={onLogout} onSelectChat={handleSelectChat} />
 
       <div className="flex flex-1 overflow-hidden">
         <ChatListEnhanced

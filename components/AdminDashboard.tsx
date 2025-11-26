@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { User, GroupCreationRequest, AddMembersRequest, AnnouncementRequest, AdminGroup } from '../types';
-import { adminService } from '../services/apiService';
+import { adminService, chatService } from '../services/apiService';
 
 interface AdminDashboardProps {
   currentUser: User;
+  onClose?: () => void;
+  onSelectChat?: (chatId: string) => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, onSelectChat }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
   const [groups, setGroups] = useState<AdminGroup[]>([]);
@@ -278,6 +280,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser }) => {
     }
   };
 
+  const handleChatWithUser = async (userId: string) => {
+    try {
+      // Check if a private chat already exists with this user
+      const chatsResponse = await chatService.getUserChats();
+      
+      if (chatsResponse.success && chatsResponse.data) {
+        // Find existing private chat with this user
+        const existingChat = chatsResponse.data.find(chat => 
+          chat.type === 'private' && 
+          chat.participants.some(p => p._id === userId)
+        );
+
+        if (existingChat) {
+          // Chat exists, select it
+          onSelectChat?.(existingChat._id);
+          onClose?.();
+        } else {
+          // Create new private chat
+          const createChatResponse = await chatService.createChat({
+            type: 'private',
+            participants: [currentUser._id, userId]
+          });
+          
+          if (createChatResponse.success && createChatResponse.data) {
+            onSelectChat?.(createChatResponse.data._id);
+            onClose?.();
+            alert('✅ تم إنشاء محادثة خاصة بنجاح!');
+          } else {
+            throw new Error(createChatResponse.message || 'Failed to create chat');
+          }
+        }
+      }
+    } catch (err: any) {
+      alert(`❌ فشل إنشاء المحادثة: ${err.message}`);
+    }
+  };
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'Admin':
@@ -529,6 +568,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser }) => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
+                          {user._id !== currentUser._id && (
+                            <button
+                              onClick={() => handleChatWithUser(user._id)}
+                              className="text-green-600 hover:text-green-900"
+                              title="محادثة خاصة"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                              </svg>
+                            </button>
+                          )}
                           {canManageUsers && user._id !== currentUser._id && (
                             <>
                               <button
@@ -557,7 +607,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser }) => {
                               )}
                             </>
                           )}
-                          {!canManageUsers && (
+                          {!canManageUsers && user._id !== currentUser._id && (
                             <span className="text-gray-400 text-xs">صلاحيات محدودة</span>
                           )}
                         </div>
