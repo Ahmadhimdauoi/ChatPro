@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants';
-import { User, ApiResponse, JwtPayload, Chat, ChatMessage, ChatParticipant, UnseenMessage, FileAttachment, GroupCreationRequest, AddMembersRequest, AnnouncementRequest, AdminGroup, AnnouncementResponse } from '../types';
+import { User, ApiResponse, JwtPayload, Chat, ChatMessage, ChatParticipant, UnseenMessage, FileAttachment, GroupCreationRequest, AddMembersRequest, AnnouncementRequest, AdminGroup, AnnouncementResponse, GroupCallRequest, CallStartResponse, CallEndResponse } from '../types';
 
 /**
  * Generic function for making API requests.
@@ -197,6 +197,20 @@ export const adminService = {
    */
   publishAnnouncement: async (announcementData: AnnouncementRequest): Promise<ApiResponse<AnnouncementResponse>> => {
     return apiRequest<AnnouncementResponse>('/admin/announce', 'POST', announcementData, true);
+  },
+
+  /**
+   * Start group call with automatic documentation (Admin only)
+   */
+  startGroupCall: async (callData: GroupCallRequest): Promise<ApiResponse<CallStartResponse>> => {
+    return apiRequest<CallStartResponse>('/admin/calls/start', 'POST', callData, true);
+  },
+
+  /**
+   * End group call and generate documentation (Admin only)
+   */
+  endGroupCall: async (sessionId: string): Promise<ApiResponse<CallEndResponse>> => {
+    return apiRequest<CallEndResponse>(`/admin/calls/${sessionId}/end`, 'POST', undefined, true);
   },
 };
 
@@ -398,6 +412,19 @@ export const chatService = {
    */
   getChatMessages: async (chatId: string): Promise<ApiResponse<ChatMessage[]>> => {
     return apiRequest<ChatMessage[]>(`/chats/${chatId}/messages`, 'GET', undefined, true);
+  },
+
+  /**
+   * Send a message to a chat conversation.
+   * @param chatId The ID of the chat conversation.
+   * @param messageData The message content and type.
+   * @returns A promise that resolves to the API response, containing the sent message.
+   */
+  sendMessage: async (chatId: string, messageData: {
+    content: string;
+    messageType?: string;
+  }): Promise<ApiResponse<ChatMessage>> => {
+    return apiRequest<ChatMessage>(`/chats/${chatId}/messages`, 'POST', messageData, true);
   },
 
   /**

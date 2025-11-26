@@ -11,7 +11,9 @@ const {
   getAllUsers,
   updateUserRole,
   deleteUser,
-  getAnalytics
+  getAnalytics,
+  startGroupCall,
+  endGroupCall
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -88,5 +90,19 @@ router.delete('/users/:userId', checkAdminRole, deleteUser);
  * @access  Admin/Manager only
  */
 router.get('/analytics', checkPermission('canViewAnalytics'), getAnalytics);
+
+/**
+ * @route   POST /api/admin/calls/start
+ * @desc    Start group call with automatic documentation
+ * @access  Admin/Manager only
+ */
+router.post('/calls/start', checkGroupManagement, startGroupCall);
+
+/**
+ * @route   POST /api/admin/calls/:sessionId/end
+ * @desc    End group call and generate documentation
+ * @access  Admin/Manager only
+ */
+router.post('/calls/:sessionId/end', checkGroupManagement, endGroupCall);
 
 module.exports = router;

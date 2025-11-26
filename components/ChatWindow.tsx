@@ -80,6 +80,125 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {localMessages.map((message) => {
         const isCurrentUser = message.sender_id === currentUserId;
+        const isCallMessage = message.content.includes('📞 **🎯 Premium Group Call Session** 🎯');
+        
+        // Special styling for call messages - always use the enhanced design
+        if (isCallMessage) {
+          return (
+            <div
+              key={message._id}
+              className="flex flex-col max-w-[85%] mx-auto"
+              aria-live="polite"
+            >
+              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-5 border border-indigo-200 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <span className="text-3xl mr-3">📞</span>
+                    <div>
+                      <h4 className="font-bold text-indigo-900 text-lg">🎯 Premium Group Call Session</h4>
+                      <p className="text-sm text-indigo-600 font-medium">
+                        {isCurrentUser ? 'You started this call' : `Started by ${message.sender_username}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                    isCurrentUser 
+                      ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
+                      : 'bg-green-100 text-green-700 border border-green-300'
+                  }`}>
+                    {isCurrentUser ? '📤 Sent' : '📥 Received'}
+                  </div>
+                </div>
+                
+                {/* Extract call details */}
+                {(() => {
+                  const lines = message.content.split('\n');
+                  const topic = lines.find(l => l.includes('🎙️ **Topic:**'))?.split(':')[1]?.trim();
+                  const host = lines.find(l => l.includes('👤 **Host:**'))?.split(':')[1]?.trim();
+                  const time = lines.find(l => l.includes('⏰ **Start Time:**'))?.split(':')[1]?.trim();
+                  const linkMatch = message.content.match(/\[🎤 Join Video Call\]\((https:\/\/[^)]+)\)/);
+                  const joinUrl = linkMatch ? linkMatch[1] : null;
+                  
+                  return (
+                    <div className="space-y-3">
+                      {topic && (
+                        <div className="bg-white bg-opacity-60 rounded-lg p-3 border border-indigo-100">
+                          <div className="flex items-center">
+                            <span className="text-indigo-600 text-sm w-24 font-medium">🎙️ Topic:</span>
+                            <span className="font-bold text-gray-900 text-sm">{topic}</span>
+                          </div>
+                        </div>
+                      )}
+                      {host && (
+                        <div className="bg-white bg-opacity-60 rounded-lg p-3 border border-indigo-100">
+                          <div className="flex items-center">
+                            <span className="text-indigo-600 text-sm w-24 font-medium">👤 Host:</span>
+                            <span className="font-bold text-gray-900 text-sm">{host}</span>
+                          </div>
+                        </div>
+                      )}
+                      {time && (
+                        <div className="bg-white bg-opacity-60 rounded-lg p-3 border border-indigo-100">
+                          <div className="flex items-center">
+                            <span className="text-indigo-600 text-sm w-24 font-medium">⏰ Time:</span>
+                            <span className="font-bold text-gray-900 text-sm">{time}</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Premium Features */}
+                      <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-3 border border-purple-200">
+                        <p className="text-xs font-bold text-purple-800 mb-2">✨ Premium Features Enabled:</p>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="flex items-center text-purple-700">
+                            <span className="text-green-500 mr-1">✓</span>
+                            <span>🎥 HD Recording</span>
+                          </div>
+                          <div className="flex items-center text-purple-700">
+                            <span className="text-green-500 mr-1">✓</span>
+                            <span>📝 Live Transcription</span>
+                          </div>
+                          <div className="flex items-center text-purple-700">
+                            <span className="text-green-500 mr-1">✓</span>
+                            <span>🤖 AI Summary</span>
+                          </div>
+                          <div className="flex items-center text-purple-700">
+                            <span className="text-green-500 mr-1">✓</span>
+                            <span>📊 Documentation</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Join Button */}
+                      <div className="pt-3">
+                        <button
+                          onClick={() => {
+                            if (joinUrl) {
+                              window.open(joinUrl, '_blank');
+                            }
+                          }}
+                          className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                        >
+                          <span className="text-lg">🎤</span>
+                          <span>Join Premium Video Call</span>
+                          <span className="text-xs opacity-75">→</span>
+                        </button>
+                        <p className="text-xs text-center text-gray-500 mt-2 italic">
+                          🚀 High-quality video conference • Click to join instantly
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className={`text-xs mt-2 text-gray-400 text-center`}>
+                {formatTimestamp(message.timestamp)}
+              </div>
+            </div>
+          );
+        }
+
+        // Regular message styling
         const messageClass = isCurrentUser
           ? 'bg-blue-600 text-white self-end ml-auto rounded-l-2xl rounded-br-2xl'
           : 'bg-white text-gray-800 self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-gray-200 shadow-sm';
@@ -100,7 +219,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </div>
             )}
             <div className="text-sm leading-relaxed break-words">
-              {message.content}
+              <div className="whitespace-pre-wrap">{message.content}</div>
             </div>
             <div className={`text-xs mt-2 ${isCurrentUser ? 'text-blue-100' : 'text-gray-400'} self-end`}>
               {formatTimestamp(message.timestamp)}

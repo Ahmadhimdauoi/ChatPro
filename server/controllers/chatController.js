@@ -183,8 +183,50 @@ const getChatMessages = async (req, res) => {
   }
 };
 
+// @desc    Send a message in a chat
+// @route   POST /api/chats/:chatId/messages
+// @access  Private
+const sendMessage = async (req, res) => {
+  const { chatId } = req.params;
+  const { content } = req.body;
+  const currentUserId = req.userId;
+
+  try {
+    // First, verify that the current user is a participant in this chat
+    const chat = await Chat.findById(chatId);
+    if (!chat || !chat.participants.includes(currentUserId)) {
+      return res.status(403).json({ success: false, message: 'Not authorized to access this chat.' });
+    }
+
+    // Create a new message
+    const message = new Message({
+      chat_id: chatId,
+      sender_id: currentUserId,
+      content,
+    });
+
+    await message.save();
+
+    // Populate sender's username
+    const populatedMessage = await Message.findById(message._id)
+      .populate('sender_id', 'username')
+      .lean();
+
+    res.status(201).json({
+      success: true,
+      message: 'Message sent successfully.',
+      data: populatedMessage,
+    });
+
+  } catch (error) {
+    console.error('Send Message error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   createChat,
   getUserChats,
   getChatMessages,
+  sendMessage,
 };

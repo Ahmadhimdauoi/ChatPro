@@ -137,6 +137,74 @@ export interface AddMembersRequest {
   participants: string[];
 }
 
+export interface GroupCallRequest {
+  title: string;
+  groupIds: string[];
+  scheduledTime?: string; // ISO date string for scheduled calls
+  description?: string;
+  enableRecording?: boolean;
+  enableTranscription?: boolean;
+}
+
+export interface GroupCallSession {
+  _id: string;
+  title: string;
+  hostId: string;
+  hostUsername: string;
+  groupIds: string[];
+  groups: AdminGroup[];
+  startTime: string;
+  endTime?: string;
+  status: 'scheduled' | 'active' | 'ended' | 'cancelled';
+  participants: CallParticipant[];
+  recordingUrl?: string;
+  transcriptionUrl?: string;
+  aiSummary?: string;
+  joinUrl: string;
+  description?: string;
+}
+
+export interface CallParticipant {
+  userId: string;
+  username: string;
+  joinedAt: string;
+  leftAt?: string;
+  duration?: number; // in seconds
+  spoke: boolean; // whether the participant spoke during the call
+}
+
+export interface CallTranscription {
+  sessionId: string;
+  segments: TranscriptionSegment[];
+  fullText: string;
+  summary?: string;
+  keyPoints?: string[];
+  actionItems?: string[];
+  createdAt: string;
+}
+
+export interface TranscriptionSegment {
+  speaker: string;
+  text: string;
+  timestamp: string;
+  confidence: number;
+  duration: number;
+}
+
+export interface CallDocumentation {
+  sessionId: string;
+  callTitle: string;
+  groups: string[];
+  participants: string[];
+  duration: number;
+  transcription: CallTranscription;
+  aiSummary: string;
+  keyDecisions: string[];
+  actionItems: string[];
+  recordingUrl?: string;
+  createdAt: string;
+}
+
 export interface AnnouncementRequest {
   message: string;
   groupIds: string[];
@@ -147,6 +215,7 @@ export interface AnnouncementRequest {
 export interface AdminGroup extends Chat {
   participantDetails?: ChatParticipant[];
   groupAdminDetails?: ChatParticipant;
+  groupImage?: string; // URL of the group image
 }
 
 export interface AnnouncementResult {
@@ -161,4 +230,16 @@ export interface AnnouncementResponse {
   totalRecipients: number;
   sender: string;
   priority: 'normal' | 'urgent' | 'important';
+}
+
+export interface CallStartResponse {
+  session: GroupCallSession;
+  joinUrl: string;
+  message: string;
+}
+
+export interface CallEndResponse {
+  documentation: CallDocumentation;
+  message: string;
+  duration: number;
 }

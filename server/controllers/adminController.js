@@ -717,6 +717,256 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+/**
+ * Start group call with automatic documentation
+ * @route   POST /api/admin/calls/start
+ * @access  Admin only
+ */
+const startGroupCall = async (req, res) => {
+  try {
+    console.log('📞 Starting group call request:', {
+      body: req.body,
+      userId: req.userId
+    });
+
+    const { title, groupIds, description, enableRecording, enableTranscription } = req.body;
+    const adminId = req.userId;
+
+    // Validate inputs
+    if (!title || !groupIds || !Array.isArray(groupIds)) {
+      console.log('❌ Validation failed: missing title or groupIds');
+      return res.status(400).json({
+        success: false,
+        message: 'Call title and group IDs array are required'
+      });
+    }
+
+    if (groupIds.length === 0) {
+      console.log('❌ Validation failed: empty groupIds array');
+      return res.status(400).json({
+        success: false,
+        message: 'At least one group must be selected'
+      });
+    }
+
+    console.log('🔍 Looking for groups:', groupIds);
+
+    // Verify all groups exist and are group chats
+    const validGroups = await Chat.find({ 
+      _id: { $in: groupIds },
+      type: 'group'
+    });
+
+    console.log('✅ Found groups:', validGroups.length, 'out of', groupIds.length);
+
+    if (validGroups.length !== groupIds.length) {
+      console.log('❌ Some groups not found');
+      return res.status(400).json({
+        success: false,
+        message: 'One or more groups do not exist or are not group chats'
+      });
+    }
+
+    // Get admin details
+    const admin = await User.findById(adminId, 'username email');
+    console.log('👤 Admin found:', admin ? admin.username : 'Not found');
+
+    if (!admin) {
+      console.log('❌ Admin not found');
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+
+    // Create unique call session ID
+    const sessionId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const joinUrl = `https://call.chatpro.com/join/${sessionId}`;
+
+    console.log('🆔 Creating session:', sessionId);
+
+    // Create call session object (in production, this would be stored in database)
+    const callSession = {
+      _id: sessionId,
+      title: title.trim(),
+      hostId: adminId,
+      hostUsername: admin.username,
+      groupIds: groupIds,
+      groups: validGroups.map(g => ({
+        _id: g._id,
+        name: g.name,
+        participants: g.participants
+      })),
+      startTime: new Date().toISOString(),
+      status: 'active',
+      participants: [],
+      joinUrl: joinUrl,
+      description: description?.trim() || '',
+      enableRecording: enableRecording !== false,
+      enableTranscription: enableTranscription !== false
+    };
+
+    console.log('📞 Call session created successfully');
+
+    // Create call notification message for each group
+    const messagePromises = validGroups.map(async (group) => {
+      const callNotification = new Message({
+        chat_id: group._id,
+        sender_id: adminId,
+        sender_username: admin.username,
+        content: `📞 **مكالمة جماعية موثقة**\n\n**الموضوع:** ${title.trim()}\n**المستضيف:** ${admin.username}\n**الرابط:** [انضم للمكالمة](${joinUrl})\n\n**ملاحظات:**\n• سيتم تسجيل المكالمة تلقائياً\n• سيتم تحويل الحوار إلى نص مكتوب\n• سيتم إنشاء ملخص تلقائي عند الانتهاء`,
+        messageType: 'system',
+        priority: 'urgent',
+        is_read: false,
+        timestamp: new Date()
+      });
+
+      await callNotification.save();
+      return {
+        chatId: group._id,
+        chatName: group.name,
+        messageId: callNotification._id
+      };
+    });
+
+    const notificationResults = await Promise.all(messagePromises);
+    console.log('📢 Notifications sent to groups:', notificationResults.length);
+
+    // Collect all unique participants from all groups
+    const allParticipants = new Set();
+    validGroups.forEach(group => {
+      group.participants.forEach(participant => {
+        if (participant.toString() !== adminId) {
+          allParticipants.add(participant.toString());
+        }
+      });
+    });
+
+    console.log('👥 Total participants to notify:', allParticipants.size);
+
+    // Send real-time notifications via socket
+    const socketService = require('../services/socketService');
+    allParticipants.forEach(participantId => {
+      socketService.emitToUser(participantId, 'groupCallStarted', {
+        sessionId: sessionId,
+        title: title.trim(),
+        host: admin.username,
+        joinUrl: joinUrl,
+        groups: notificationResults,
+        enableRecording: enableRecording !== false,
+        enableTranscription: enableTranscription !== false,
+        timestamp: new Date()
+      });
+    });
+
+    console.log('✅ Group call started successfully');
+
+    res.status(201).json({
+      success: true,
+      message: 'Group call started successfully',
+      data: {
+        session: callSession,
+        joinUrl: joinUrl,
+        notifications: notificationResults,
+        totalParticipants: allParticipants.size
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Start group call error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while starting group call'
+    });
+  }
+};
+
+/**
+ * End group call and generate documentation
+ * @route   POST /api/admin/calls/:sessionId/end
+ * @access  Admin only
+ */
+const endGroupCall = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const adminId = req.userId;
+
+    // Validate session ID
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Session ID is required'
+      });
+    }
+
+    // In production, you would retrieve the call session from database
+    // For now, we'll simulate the call ending process
+    
+    // Mock call session data (in production, get from database)
+    const mockCallSession = {
+      _id: sessionId,
+      title: 'Sample Call',
+      hostId: adminId,
+      groupIds: [],
+      startTime: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+      participants: []
+    };
+
+    // Calculate duration
+    const endTime = new Date();
+    const startTime = new Date(mockCallSession.startTime);
+    const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
+
+    // Mock AI-generated documentation
+    const documentation = {
+      sessionId: sessionId,
+      callTitle: mockCallSession.title,
+      duration: duration,
+      transcription: {
+        fullText: 'This is a mock transcription of the call...',
+        summary: 'Key points discussed during the call...',
+        keyPoints: ['Important point 1', 'Important point 2'],
+        actionItems: ['Action item 1', 'Action item 2']
+      },
+      aiSummary: 'AI-generated executive summary of the call...',
+      keyDecisions: ['Decision 1', 'Decision 2'],
+      actionItems: ['Task 1', 'Task 2'],
+      recordingUrl: `https://recordings.chatpro.com/${sessionId}.mp4`,
+      createdAt: endTime.toISOString()
+    };
+
+    // Create documentation message for groups that participated
+    const documentationMessage = `📋 **تقرير المكالمة الموثقة**\n\n**الموضوع:** ${mockCallSession.title}\n**المدة:** ${Math.floor(duration / 60)} دقيقة ${duration % 60} ثانية\n\n**الملخص التلقائي:**\n${documentation.aiSummary}\n\n**القرارات الرئيسية:**\n${documentation.keyDecisions.map(d => `• ${d}`).join('\n')}\n\n**الإجراءات المطلوبة:**\n${documentation.actionItems.map(a => `• ${a}`).join('\n')}\n\n**التسجيل:** [مشاهدة التسجيل](${documentation.recordingUrl})`;
+
+    // Send documentation to participating groups
+    // In production, you would get the actual group IDs from the call session
+    const socketService = require('../services/socketService');
+    socketService.emitToAllParticipants('groupCallEnded', {
+      sessionId: sessionId,
+      documentation: documentation,
+      message: documentationMessage,
+      timestamp: endTime
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Group call ended and documentation generated successfully',
+      data: {
+        documentation: documentation,
+        duration: duration,
+        endedAt: endTime.toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('End group call error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while ending group call'
+    });
+  }
+};
+
 module.exports = {
   removeGroupMember,
   createGroup,
@@ -727,5 +977,7 @@ module.exports = {
   getAllUsers,
   updateUserRole,
   deleteUser,
-  getAnalytics
+  getAnalytics,
+  startGroupCall,
+  endGroupCall
 };
