@@ -71,10 +71,59 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       )}
 
       {!loading && localMessages.length === 0 && (
-        <div className="text-center text-gray-500 italic py-12">
-          <div className="text-6xl mb-4">💬</div>
-          <div className="text-lg">No messages yet</div>
-          <div className="text-sm">Start the conversation!</div>
+        <div className="text-center text-textSecondary py-12">
+          {/* Animated Chat Icon */}
+          <div className="relative mb-6 inline-block">
+            <div className="text-6xl animate-bounce">
+              <div className="relative inline-block">
+                {/* Rotating ring around icon */}
+                <div className="absolute inset-0 animate-spin">
+                  <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full opacity-30"></div>
+                </div>
+                {/* Pulsing center icon */}
+                <div className="relative animate-pulse">
+                  <span className="text-5xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    💭
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Floating particles */}
+            <div className="absolute -top-2 -left-4 text-lg animate-ping opacity-60">
+              ✨
+            </div>
+            <div className="absolute -top-1 -right-3 text-sm animate-ping animation-delay-300 opacity-60">
+              ⭐
+            </div>
+            <div className="absolute -bottom-1 -left-3 text-xs animate-ping animation-delay-600 opacity-60">
+              💫
+            </div>
+          </div>
+
+          {/* Animated Welcome Messages */}
+          <div className="space-y-3">
+            <div className="animate-fade-in-up">
+              <div className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                Ready to connect?
+              </div>
+            </div>
+            <div className="animate-fade-in-up animation-delay-200">
+              <div className="text-sm text-textSecondary">
+                Send your first message to start the conversation
+              </div>
+            </div>
+            <div className="animate-fade-in-up animation-delay-400 mt-4">
+              <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-accent to-accent-dark rounded-full border border-secondary/30">
+                <span className="text-xs text-secondary font-medium">
+                  Type a message below to begin
+                </span>
+                <span className="ml-2 text-xs animate-bounce">
+                  👇
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -40,12 +40,12 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
         onClick={() => onChatSelect(chat._id)}
         className={`flex items-center p-3 cursor-pointer transition-colors duration-200 ${
           isSelected 
-            ? 'bg-blue-50 border-l-4 border-blue-600' 
-            : 'hover:bg-gray-50 border-l-4 border-transparent'
+            ? 'bg-accent border-l-4 border-secondary' 
+            : 'hover:bg-accent-dark border-l-4 border-transparent'
         }`}
       >
         {/* Chat icon */}
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-secondary to-primary rounded-full flex items-center justify-center text-white font-semibold mr-3">
           {icon}
         </div>
 
@@ -53,23 +53,23 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <h3 className={`font-semibold truncate ${
-              isSelected ? 'text-blue-600' : 'text-gray-900'
+              isSelected ? 'text-secondary' : 'text-primary'
             }`}>
               {displayName}
             </h3>
             {chat.unreadCount && chat.unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+              <span className="bg-danger text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
                 {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
               </span>
             )}
           </div>
           
           <div className="flex items-center justify-between mt-1">
-            <p className="text-sm text-gray-500 truncate">
+            <p className="text-sm text-textSecondary truncate">
               {displaySubtitle}
             </p>
             {chat.category && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+              <span className="text-xs bg-accent text-secondary px-2 py-0.5 rounded">
                 {chat.category}
               </span>
             )}
@@ -78,7 +78,7 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
           {/* Last message preview */}
           {chat.lastMessage && (
             <div className="mt-1">
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-textSecondary truncate">
                 {chat.lastMessage.sender_username}: {chat.lastMessage.content}
               </p>
             </div>
@@ -90,10 +90,10 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
           <div className="ml-2">
             <div className={`w-2 h-2 rounded-full ${
               otherParticipant.status === 'online' 
-                ? 'bg-green-500' 
+                ? 'bg-success' 
                 : otherParticipant.status === 'offline' 
-                ? 'bg-gray-400'
-                : 'bg-yellow-500'
+                ? 'bg-textSecondary'
+                : 'bg-secondary-light'
             }`} />
           </div>
         )}
@@ -102,11 +102,11 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-card">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800">Messages</h2>
-        <p className="text-sm text-gray-500">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg font-semibold text-primary">Messages</h2>
+        <p className="text-sm text-textSecondary">
           {chats.length} conversations
         </p>
       </div>
@@ -116,12 +116,12 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
         {/* Private Chats Section */}
         {privateChats.length > 0 && (
           <div className="mb-4">
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <div className="px-4 py-2 bg-accent border-b border-border">
+              <h3 className="text-xs font-semibold text-secondary uppercase tracking-wider">
                 Direct Messages
               </h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {privateChats.map(chat => renderChatItem(chat, false))}
             </div>
           </div>
@@ -130,12 +130,12 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
         {/* Group Chats Section */}
         {groupChats.length > 0 && (
           <div>
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-              <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            <div className="px-4 py-2 bg-accent border-b border-border">
+              <h3 className="text-xs font-semibold text-secondary uppercase tracking-wider">
                 Groups & Channels
               </h3>
             </div>
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {groupChats.map(chat => renderChatItem(chat, true))}
             </div>
           </div>
@@ -143,10 +143,10 @@ const ChatListEnhanced: React.FC<ChatListEnhancedProps> = ({
 
         {/* Empty state */}
         {chats.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-12 text-textSecondary">
             <div className="text-4xl mb-3">💬</div>
-            <p className="text-lg font-medium">No conversations yet</p>
-            <p className="text-sm">Start chatting to see your conversations here</p>
+            <p className="text-lg font-medium text-primary">No conversations yet</p>
+            <p className="text-sm text-secondary">Start chatting to see your conversations here</p>
           </div>
         )}
       </div>

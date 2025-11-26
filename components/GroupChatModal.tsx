@@ -66,10 +66,10 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create Group Chat</h2>
-          <p className="text-sm text-gray-600 mt-1">
+      <div className="bg-card rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden">
+        <div className="p-6 border-b border-border">
+          <h2 className="text-xl font-semibold text-primary">Create Group Chat</h2>
+          <p className="text-sm text-textSecondary mt-1">
             Add participants to create a group conversation
           </p>
         </div>
@@ -77,7 +77,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6">
           {/* Group Name Input */}
           <div className="mb-4">
-            <label htmlFor="groupName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="groupName" className="block text-sm font-medium text-primary mb-2">
               Group Name *
             </label>
             <input
@@ -85,7 +85,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
               id="groupName"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
               placeholder="Enter group name"
               disabled={loading}
             />
@@ -93,7 +93,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
 
           {/* Search Users */}
           <div className="mb-4">
-            <label htmlFor="searchUsers" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="searchUsers" className="block text-sm font-medium text-primary mb-2">
               Search Participants
             </label>
             <input
@@ -101,7 +101,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
               id="searchUsers"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent"
               placeholder="Search by name or email"
               disabled={loading}
             />
@@ -109,44 +109,44 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
 
           {/* Participants List */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-primary mb-2">
               Select Participants *
             </label>
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md">
+            <div className="max-h-48 overflow-y-auto border border-border rounded-md">
               {filteredUsers.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-textSecondary">
                   {searchTerm ? 'No users found' : 'No available users'}
                 </div>
               ) : (
                 filteredUsers.map(user => (
                   <div
                     key={user._id}
-                    className="flex items-center p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    className="flex items-center p-3 hover:bg-accent border-b border-border last:border-b-0"
                   >
                     <input
                       type="checkbox"
                       id={`user-${user._id}`}
                       checked={selectedParticipants.includes(user._id)}
                       onChange={() => handleToggleParticipant(user._id)}
-                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-secondary focus:ring-secondary border-border rounded"
                       disabled={loading}
                     />
                     <label
                       htmlFor={`user-${user._id}`}
                       className="ml-3 flex-1 cursor-pointer"
                     >
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-primary">
                         {user.username}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-textSecondary">
                         {user.email} • {user.department}
                       </div>
                     </label>
                     <div className="ml-2">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         user.status === 'online' 
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-success text-success'
+                          : 'bg-accent text-textSecondary'
                       }`}>
                         {user.status}
                       </span>
@@ -159,8 +159,8 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
 
           {/* Selected Participants Summary */}
           {selectedParticipants.length > 0 && (
-            <div className="mb-4 p-3 bg-purple-50 rounded-md">
-              <div className="text-sm text-purple-800">
+            <div className="mb-4 p-3 bg-accent rounded-md">
+              <div className="text-sm text-secondary">
                 <span className="font-medium">{selectedParticipants.length}</span> participant(s) selected
               </div>
             </div>
@@ -171,14 +171,14 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="px-4 py-2 text-sm font-medium text-primary bg-card border border-border rounded-md hover:bg-accent focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium text-white bg-secondary border border-transparent rounded-md hover:bg-secondary-dark focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading || !groupName.trim() || selectedParticipants.length === 0}
             >
               {loading ? 'Creating...' : 'Create Group'}

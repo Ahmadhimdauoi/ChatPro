@@ -115,7 +115,7 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
     
     return (
       <div className={`mt-2 p-2 rounded-lg ${
-        isCurrentUser ? 'bg-blue-700' : 'bg-gray-100'
+        isCurrentUser ? 'bg-primary-dark' : 'bg-accent'
       }`}>
         <div className="flex items-center space-x-2">
           <span className="text-lg">{fileIcon}</span>
@@ -125,13 +125,13 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className={`text-sm font-medium hover:underline ${
-                isCurrentUser ? 'text-blue-100' : 'text-blue-600'
+                isCurrentUser ? 'text-accent' : 'text-secondary'
               }`}
             >
               {fileAttachment.originalName}
             </a>
             <div className={`text-xs ${
-              isCurrentUser ? 'text-blue-200' : 'text-gray-500'
+              isCurrentUser ? 'text-accent-dark' : 'text-textSecondary'
             }`}>
               {typeof fileAttachment.size === 'number' && !isNaN(fileAttachment.size) 
                 ? `${(fileAttachment.size / 1024).toFixed(1)} KB` 
@@ -142,7 +142,7 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
             href={fileAttachment.url}
             download={fileAttachment.originalName}
             className={`p-1 rounded hover:bg-opacity-20 ${
-              isCurrentUser ? 'text-blue-100 hover:bg-white' : 'text-blue-600 hover:bg-blue-100'
+              isCurrentUser ? 'text-accent hover:bg-white' : 'text-secondary hover:bg-accent'
             }`}
             title="Download file"
           >
@@ -158,11 +158,11 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
   return (
     <>
       {/* Header with summary button */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <h2 className="text-lg font-semibold text-gray-800">Chat</h2>
+          <h2 className="text-lg font-semibold text-primary">Chat</h2>
           {localMessages.length > 0 && (
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-textSecondary">
               ({localMessages.length} messages)
             </span>
           )}
@@ -170,7 +170,7 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
         <button
           onClick={handleGenerateSummary}
           disabled={!chatId || localMessages.length === 0 || summaryLoading}
-          className="flex items-center space-x-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center space-x-2 px-3 py-1.5 bg-secondary hover:bg-secondary-dark text-white text-sm font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           title="Generate AI summary"
         >
           <span>🤖</span>
@@ -179,28 +179,77 @@ const ChatWindowEnhanced: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-background">
         {loading && (
-          <div className="text-center text-gray-500 italic py-8">Loading messages...</div>
+          <div className="text-center text-textSecondary italic py-8">Loading messages...</div>
         )}
 
         {!loading && localMessages.length === 0 && (
-          <div className="text-center text-gray-500 italic py-12">
-            <div className="text-6xl mb-4">💬</div>
-            <div className="text-lg">No messages yet</div>
-            <div className="text-sm">Start the conversation!</div>
+          <div className="text-center text-textSecondary py-12">
+            {/* Animated Chat Icon */}
+            <div className="relative mb-6 inline-block">
+              <div className="text-6xl animate-bounce">
+                <div className="relative inline-block">
+                  {/* Rotating ring around icon */}
+                  <div className="absolute inset-0 animate-spin">
+                    <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full opacity-30"></div>
+                  </div>
+                  {/* Pulsing center icon */}
+                  <div className="relative animate-pulse">
+                    <span className="text-5xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      💭
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Floating particles */}
+              <div className="absolute -top-2 -left-4 text-lg animate-ping opacity-60">
+                ✨
+              </div>
+              <div className="absolute -top-1 -right-3 text-sm animate-ping animation-delay-300 opacity-60">
+                ⭐
+              </div>
+              <div className="absolute -bottom-1 -left-3 text-xs animate-ping animation-delay-600 opacity-60">
+                💫
+              </div>
+            </div>
+
+            {/* Animated Welcome Messages */}
+            <div className="space-y-3">
+              <div className="animate-fade-in-up">
+                <div className="text-xl font-semibold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Ready to connect?
+                </div>
+              </div>
+              <div className="animate-fade-in-up animation-delay-200">
+                <div className="text-sm text-textSecondary">
+                  Send your first message to start the conversation
+                </div>
+              </div>
+              <div className="animate-fade-in-up animation-delay-400 mt-4">
+                <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-accent to-accent-dark rounded-full border border-secondary/30">
+                  <span className="text-xs text-secondary font-medium">
+                    Type a message below to begin
+                  </span>
+                  <span className="ml-2 text-xs animate-bounce">
+                    👇
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
         {localMessages.map((message) => {
           const isCurrentUser = message.sender_id === currentUserId;
           const messageClass = isCurrentUser
-            ? 'bg-blue-600 text-white self-end ml-auto rounded-l-2xl rounded-br-2xl'
-            : 'bg-white text-gray-800 self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-gray-200 shadow-sm';
+            ? 'bg-secondary text-white self-end ml-auto rounded-l-2xl rounded-br-2xl'
+            : 'bg-card text-primary self-start mr-auto rounded-r-2xl rounded-bl-2xl border border-border shadow-sm';
 
           const roleColor = isCurrentUser
-            ? 'text-blue-100'
-            : 'text-blue-600 font-medium';
+            ? 'text-accent'
+            : 'text-secondary font-medium';
 
           return (
             <div

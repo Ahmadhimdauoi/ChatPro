@@ -11,21 +11,52 @@
         theme: {
           extend: {
             colors: {
-              primary: '#4c51bf', // Indigo-700 for a more corporate feel
-              secondary: '#667eea', // Indigo-500
-              accent: '#f6ad55', // Orange-400
-              background: '#f7fafc', // Gray-50
-              card: '#ffffff', // White
-              textPrimary: '#2d3748', // Gray-800
-              textSecondary: '#4a5568', // Gray-600
-              border: '#e2e8f0', // Gray-200
-              success: '#48bb78', // Green-500
-              danger: '#ef4444', // Red-500
-            }
+              // PONGO Brand Colors
+              primary: '#3D3E88', // Dark Blue - Primary text, backgrounds of prominent elements
+              secondary: '#738EC3', // Medium Blue - Primary buttons, sub-headings, icons
+              accent: '#BFDDF7', // Light Blue - Backgrounds, light borders, hover/selected states
+              background: '#BFDDF7', // Light Blue - Main background color
+              card: '#ffffff', // White - Card backgrounds for contrast
+              textPrimary: '#3D3E88', // Dark Blue - Primary text color
+              textSecondary: '#738EC3', // Medium Blue - Secondary text, descriptions
+              border: '#BFDDF7', // Light Blue - Light borders
+              success: '#48bb78', // Green-500 - Success messages
+              danger: '#ef4444', // Red-500 - Error messages
+              
+              // Additional PONGO color variations for flexibility
+              'primary-light': '#738EC3', // Medium Blue as lighter version of primary
+              'primary-dark': '#2d2e5a', // Darker version of primary for hover states
+              'accent-dark': '#93b5e3', // Darker version of accent for better contrast
+              'secondary-light': '#8fa3d1', // Lighter version of secondary
+              'secondary-dark': '#5a7ab3', // Darker version of secondary
+            },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.6s ease-out',
+              'ping-slow': 'ping 3s cubic-bezier(0, 0, 0.2, 1) infinite',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': {
+                  opacity: '0',
+                  transform: 'translateY(20px)',
+                },
+                '100%': {
+                  opacity: '1',
+                  transform: 'translateY(0)',
+                },
+              },
+            },
           }
         }
       }
     </script>
+    <style>
+      .animation-delay-200 { animation-delay: 200ms; }
+      .animation-delay-300 { animation-delay: 300ms; }
+      .animation-delay-400 { animation-delay: 400ms; }
+      .animation-delay-600 { animation-delay: 600ms; }
+      .animation-delay-900 { animation-delay: 900ms; }
+    </style>
 </head>
 <body class="bg-background text-textPrimary antialiased">
     <div id="root" class="w-full h-screen flex flex-col"></div>

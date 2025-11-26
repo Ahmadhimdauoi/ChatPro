@@ -81,24 +81,24 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled }) 
   };
 
   return (
-    <div className="flex flex-col p-4 bg-white border-t border-gray-200 shadow-lg">
+    <div className="flex flex-col p-4 bg-card border-t border-border shadow-lg">
       {/* File attachment preview */}
       {uploadedFile && (
-        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+        <div className="mb-3 p-3 bg-accent border border-secondary rounded-lg flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span className="text-sm font-medium text-blue-900 truncate max-w-xs">
+            <span className="text-sm font-medium text-primary truncate max-w-xs">
               {uploadedFile.originalName}
             </span>
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-secondary">
               ({(uploadedFile.size / 1024).toFixed(1)} KB)
             </span>
           </div>
           <button
             onClick={removeUploadedFile}
-            className="text-red-500 hover:text-red-700 p-1"
+            className="text-danger hover:text-red-700 p-1"
             title="Remove file"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,18 +112,18 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled }) 
       {isUploading && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-gray-600">Uploading file...</span>
-            <span className="text-xs text-gray-600">{Math.round(uploadProgress)}%</span>
+            <span className="text-xs text-textSecondary">Uploading file...</span>
+            <span className="text-xs text-textSecondary">{Math.round(uploadProgress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-accent rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-secondary h-2 rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
               role="progressbar"
               aria-valuenow={Math.round(uploadProgress)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="File upload progress"
+              aria-label={`File upload progress: ${Math.round(uploadProgress)}%`}
             />
           </div>
         </div>
@@ -143,7 +143,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled }) 
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="p-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 text-textSecondary hover:text-primary hover:bg-accent rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={disabled || isUploading}
           title="Attach file"
         >
@@ -154,19 +154,18 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled }) 
 
         {/* Text input */}
         <textarea
-          className="flex-1 resize-none h-12 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-gray-800 placeholder-gray-400"
+          className="flex-1 resize-none h-12 p-3 border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-secondary bg-background text-primary placeholder-textSecondary overflow-y-hidden"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder={disabled ? 'Waiting for response...' : 'Type a message...'}
           disabled={disabled || isUploading}
           rows={1}
-          style={{ overflowY: 'hidden' }}
         />
 
         {/* Send button */}
         <button
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+          className="bg-secondary hover:bg-secondary-dark text-white font-medium py-3 px-6 rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
           onClick={handleSend}
           disabled={disabled || isUploading || (!input.trim() && !uploadedFile)}
           title="Send message"

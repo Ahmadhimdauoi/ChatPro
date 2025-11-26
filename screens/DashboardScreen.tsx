@@ -393,7 +393,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen bg-background">
       <Header currentUser={currentUser} onLogout={onLogout} onSelectChat={handleSelectChat} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -404,7 +404,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
           onChatSelect={handleSelectChat}
         />
 
-        <main className="flex-1 flex flex-col bg-white">
+        <main className="flex-1 flex flex-col bg-card">
           {activeChatId ? (
             <>
               <div className="flex-1 overflow-hidden relative flex flex-col">
@@ -421,11 +421,70 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ currentUser, onLogout
               />
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
+            <div className="flex-1 flex items-center justify-center text-textSecondary bg-accent">
               <div className="text-center">
-                <div className="text-6xl mb-4">💬</div>
-                <h3 className="text-2xl font-bold mb-2 text-gray-800">Welcome to ChatPro</h3>
-                <p className="text-gray-600">Select a chat from the left or start a new conversation.</p>
+                {/* Animated PONGO Logo/Icon */}
+                <div className="relative mb-8">
+                  <div className="text-6xl animate-bounce">
+                    <div className="relative inline-block">
+                      {/* Outer rotating ring */}
+                      <div className="absolute inset-0 animate-spin">
+                        <div className="w-16 h-16 border-4 border-secondary border-t-transparent rounded-full"></div>
+                      </div>
+                      {/* Center icon with pulse animation */}
+                      <div className="relative animate-pulse">
+                        <span className="text-5xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                          🌐
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Floating particles */}
+                  <div className="absolute -top-4 -left-8 text-2xl animate-ping opacity-75">
+                    ✨
+                  </div>
+                  <div className="absolute -top-2 -right-6 text-xl animate-ping animation-delay-200 opacity-75">
+                    ⭐
+                  </div>
+                  <div className="absolute -bottom-2 -left-6 text-lg animate-ping animation-delay-400 opacity-75">
+                    💫
+                  </div>
+                  <div className="absolute -bottom-4 -right-8 text-2xl animate-ping animation-delay-600 opacity-75">
+                    ✨
+                  </div>
+                </div>
+
+                {/* Animated Welcome Text */}
+                <div className="space-y-4">
+                  <h3 className="text-3xl font-bold text-primary animate-fade-in-up">
+                    <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                      PONGO Chat
+                    </span>
+                  </h3>
+                  <p className="text-secondary animate-fade-in-up animation-delay-200">
+                    Connect, collaborate, and communicate beautifully
+                  </p>
+                  <div className="animate-fade-in-up animation-delay-400">
+                    <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-accent to-accent-dark rounded-full border border-secondary">
+                      <span className="text-secondary text-sm font-medium">
+                        Select a chat to begin messaging
+                      </span>
+                      <span className="ml-2 text-secondary animate-bounce">
+                        👉
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Animated connection lines */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="w-32 h-32 border border-secondary/20 rounded-full animate-ping"></div>
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1 h-8 bg-gradient-to-b from-secondary to-transparent animate-pulse"></div>
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-8 bg-gradient-to-t from-secondary to-transparent animate-pulse animation-delay-300"></div>
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-8 h-1 bg-gradient-to-r from-secondary to-transparent animate-pulse animation-delay-600"></div>
+                  <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-8 h-1 bg-gradient-to-l from-secondary to-transparent animate-pulse animation-delay-900"></div>
+                </div>
               </div>
             </div>
           )}

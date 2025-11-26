@@ -546,16 +546,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       case 'Admin':
         return 'bg-red-100 text-red-800';
       case 'Manager':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-accent text-secondary';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-accent-dark text-textSecondary';
     }
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
       </div>
     );
   }
@@ -575,28 +575,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 min-h-full">
+    <div className="p-6 bg-gradient-to-br from-accent to-accent-dark min-h-full">
       {/* Admin Header with Special Features */}
-      <div className="mb-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-6 text-white shadow-xl">
+      <div className="mb-8 bg-gradient-to-r from-primary to-secondary rounded-xl p-6 text-white shadow-xl">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2 flex items-center">
               <span className="mr-3">👑</span>
               Admin Dashboard
             </h1>
-            <p className="text-purple-100">Welcome back, {currentUser?.username}!</p>
+            <p className="text-accent">Welcome back, {currentUser?.username}!</p>
             <div className="mt-2 flex items-center space-x-4 text-sm">
               <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
                 🔑 {currentUser?.role} Access
               </span>
-              <span className="bg-green-400 bg-opacity-30 px-3 py-1 rounded-full">
+              <span className="bg-success bg-opacity-30 px-3 py-1 rounded-full">
                 🟢 Online
               </span>
             </div>
           </div>
           <div className="text-right">
             <div className="text-4xl mb-2">🛡️</div>
-            <div className="text-sm text-purple-100">System Control</div>
+            <div className="text-sm text-accent">System Control</div>
           </div>
         </div>
       </div>
@@ -604,45 +604,45 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       {/* Enhanced Stats Cards */}
       {analytics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
+          <div className="bg-card rounded-xl p-6 shadow-lg border-l-4 border-primary hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium">Total Users</p>
-                <p className="text-3xl font-bold text-gray-900">{analytics.overview.totalUsers}</p>
-                <p className="text-purple-600 text-xs mt-1">👥 Active Members</p>
+                <p className="text-textSecondary text-sm font-medium">Total Users</p>
+                <p className="text-3xl font-bold text-primary">{analytics.overview.totalUsers}</p>
+                <p className="text-secondary text-xs mt-1">👥 Active Members</p>
               </div>
               <div className="text-3xl">👤</div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
+          <div className="bg-card rounded-xl p-6 shadow-lg border-l-4 border-secondary hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium">Total Chats</p>
-                <p className="text-3xl font-bold text-gray-900">{analytics.overview.totalChats}</p>
-                <p className="text-blue-600 text-xs mt-1">💬 Conversations</p>
+                <p className="text-textSecondary text-sm font-medium">Total Chats</p>
+                <p className="text-3xl font-bold text-primary">{analytics.overview.totalChats}</p>
+                <p className="text-secondary text-xs mt-1">💬 Conversations</p>
               </div>
               <div className="text-3xl">💭</div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-green-500 hover:shadow-xl transition-shadow">
+          <div className="bg-card rounded-xl p-6 shadow-lg border-l-4 border-success hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium">Total Messages</p>
-                <p className="text-3xl font-bold text-gray-900">{analytics.overview.totalMessages}</p>
-                <p className="text-green-600 text-xs mt-1">📨 Messages Sent</p>
+                <p className="text-textSecondary text-sm font-medium">Total Messages</p>
+                <p className="text-3xl font-bold text-primary">{analytics.overview.totalMessages}</p>
+                <p className="text-secondary text-xs mt-1">📨 Messages Sent</p>
               </div>
               <div className="text-3xl">📧</div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-orange-500 hover:shadow-xl transition-shadow">
+          <div className="bg-card rounded-xl p-6 shadow-lg border-l-4 border-secondary-light hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm font-medium">Groups</p>
-                <p className="text-3xl font-bold text-gray-900">{groups.length}</p>
-                <p className="text-orange-600 text-xs mt-1">👥 Active Groups</p>
+                <p className="text-textSecondary text-sm font-medium">Groups</p>
+                <p className="text-3xl font-bold text-primary">{groups.length}</p>
+                <p className="text-secondary text-xs mt-1">👥 Active Groups</p>
               </div>
               <div className="text-3xl">🏢</div>
             </div>
@@ -651,7 +651,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       )}
 
       {/* Admin Quick Actions */}
-      <div className="bg-white rounded-xl p-6 shadow-lg mb-8">
+      <div className="bg-card rounded-xl p-6 shadow-lg mb-8">
         <h2 className="text-xl font-semibold mb-4 flex items-center">
           <span className="mr-2">⚡</span>
           Quick Actions
@@ -659,14 +659,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={() => setShowCreateGroupModal(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+            className="bg-secondary hover:bg-secondary-dark text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
           >
             <span className="text-xl">➕</span>
             <span>Create New Group</span>
           </button>
           <button
             onClick={() => setShowCallModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
+            className="bg-primary hover:bg-primary-dark text-white p-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
           >
             <span className="text-xl">📞</span>
             <span>Start Group Call</span>
@@ -682,15 +682,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
       </div>
 
       {/* Admin Navigation Tabs */}
-      <div className="bg-white rounded-lg shadow-lg">
-        <div className="border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+      <div className="bg-card rounded-lg shadow-lg">
+        <div className="border-b border-border bg-gradient-to-r from-accent to-accent-dark">
           <nav className="flex -mb-px">
             <button
               onClick={() => setActiveTab('users')}
               className={`py-3 px-6 border-b-2 font-medium text-sm transition-all ${
                 activeTab === 'users'
-                  ? 'border-purple-500 text-purple-600 bg-white'
-                  : 'border-transparent text-gray-600 hover:text-purple-600 hover:border-purple-300'
+                  ? 'border-secondary text-secondary bg-card'
+                  : 'border-transparent text-textSecondary hover:text-secondary hover:border-accent'
               }`}
             >
               <span className="mr-2">👥</span>
@@ -700,8 +700,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
               onClick={() => setActiveTab('groups')}
               className={`py-3 px-6 border-b-2 font-medium text-sm transition-all ${
                 activeTab === 'groups'
-                  ? 'border-purple-500 text-purple-600 bg-white'
-                  : 'border-transparent text-gray-600 hover:text-purple-600 hover:border-purple-300'
+                  ? 'border-secondary text-secondary bg-card'
+                  : 'border-transparent text-textSecondary hover:text-secondary hover:border-accent'
               }`}
             >
               <span className="mr-2">📁</span>
@@ -711,8 +711,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onClose, o
               onClick={() => setActiveTab('calls')}
               className={`py-3 px-6 border-b-2 font-medium text-sm transition-all ${
                 activeTab === 'calls'
-                  ? 'border-purple-500 text-purple-600 bg-white'
-                  : 'border-transparent text-gray-600 hover:text-purple-600 hover:border-purple-300'
+                  ? 'border-secondary text-secondary bg-card'
+                  : 'border-transparent text-textSecondary hover:text-secondary hover:border-accent'
               }`}
             >
               <span className="mr-2">📞</span>
